@@ -99,9 +99,9 @@ export default function HighlightsSection() {
                     {slides.length > 0 ? (
                         <div className="carousel-track" style={{ transform: `translateX(calc(-${currentIndex * 100}% - ${currentIndex * 16}px))`, transition: "transform 0.4s ease-out", display: 'flex', gap: '16px' }}>
                             {slides.map((slide, slideIndex) => (
-                                <div key={slideIndex} className="carousel-slide" style={{ flexShrink: 0, width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                                <div key={slideIndex} className="carousel-slide" style={{ flexShrink: 0, width: "100%" }}>
                                     {slide.map((project: Highlight) => (
-                                        <a key={project._id} href={project.link || "#"} target="_blank" rel="noopener noreferrer" className="project-card" style={{ width: "100%", height: "160px", display: "block", textDecoration: "none", overflow: "hidden", position: "relative" }}>
+                                        <a key={project._id} href={project.link || "#"} target="_blank" rel="noopener noreferrer" className="project-card" style={{ display: "block", textDecoration: "none", overflow: "hidden", position: "relative" }}>
                                             {project.mediaType === 'image' && project.image && (
                                                 <img src={urlFor(project.image).url()} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />
                                             )}
