@@ -54,7 +54,7 @@ export default async function About() {
 
                 <h1 className="about-title"><BlurredStagger text="about me" /></h1>
 
-                <div className="about-content" style={{ width: "100%", maxWidth: "600px", margin: "0 auto", textAlign: "left" }}>
+                <div className="about-content" style={{ width: "100%", maxWidth: "600px", marginInline: "auto", textAlign: "left" }}>
                     {data?.aboutDescription ? (
                         <PortableText value={data.aboutDescription} components={ptComponents} />
                     ) : (

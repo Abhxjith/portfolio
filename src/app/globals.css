@@ -616,7 +616,7 @@ nav {
 }
 
 .about-content {
-  margin-top: 48px;
+  margin-top: 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
