@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import Navigation from "../components/Navigation";
+import BottomNav from "../components/BottomNav";
 
 const inter = Inter({ subsets: ["latin"] });
 const instrumentSerif = localFont({
@@ -31,13 +32,7 @@ export default function RootLayout({
         </main>
 
         <div className="bottom-vignette"></div>
-        <nav className="bottom-capsule">
-          <a href="/dev" className="capsule-link">dev</a>
-          <a href="/film" className="capsule-link">film</a>
-          <a href="/uiux" className="capsule-link">ui/ux</a>
-          <a href="/art" className="capsule-link">art</a>
-          <a href="/blogs" className="capsule-link">blogs</a>
-        </nav>
+        <BottomNav />
       </body>
     </html>
   );

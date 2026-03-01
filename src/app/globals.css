@@ -163,19 +163,33 @@ nav {
   transform: translateX(-50%);
   background-color: var(--capsule-bg);
   display: flex;
-  gap: 32px;
-  padding: 16px 40px;
+  gap: 8px;
+  padding: 12px 24px;
   border-radius: 64px;
   z-index: 50;
   animation: capsuleSlideUp 0.6s ease-out both;
 }
 
 .capsule-link {
+  position: relative;
   color: #ffffff;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 400;
-  transition: opacity 0.2s;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-indicator {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  z-index: 0;
 }
 
 .capsule-link:hover {
