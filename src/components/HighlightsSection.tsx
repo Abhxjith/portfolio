@@ -87,11 +87,13 @@ export default function HighlightsSection() {
             <p className="section-subtitle">some things i made because i could</p>
 
             <div className="carousel-container">
-                <button className="carousel-nav prev" aria-label="Previous" onClick={prevSlide}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                </button>
+                {slides.length > 1 && (
+                    <button className="carousel-nav prev" aria-label="Previous" onClick={prevSlide}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                )}
 
                 <div className="carousel-track-container" style={{ overflow: "hidden", width: "100%", maxWidth: "600px" }}>
                     {slides.length > 0 ? (
@@ -111,11 +113,6 @@ export default function HighlightsSection() {
                                                 <iframe src={project.videoUrl} style={{ width: '100%', height: '100%', border: 'none', borderRadius: 'inherit', pointerEvents: 'none' }} />
                                             )}
 
-                                            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, display: "flex", justifyContent: "center", alignItems: "flex-end", paddingBottom: "12px" }}>
-                                                <div style={{ background: "black", padding: "4px 12px", borderRadius: "100px" }}>
-                                                    <h3 className="instrument-serif" style={{ margin: 0, fontSize: "1.2rem", fontWeight: "normal", color: "var(--text-primary)" }}>{project.title}</h3>
-                                                </div>
-                                            </div>
                                         </a>
                                     ))}
                                 </div>
@@ -128,11 +125,13 @@ export default function HighlightsSection() {
                     )}
                 </div>
 
-                <button className="carousel-nav next" aria-label="Next" onClick={nextSlide}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                </button>
+                {slides.length > 1 && (
+                    <button className="carousel-nav next" aria-label="Next" onClick={nextSlide}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                )}
             </div>
         </section>
     );

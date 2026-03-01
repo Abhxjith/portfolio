@@ -14,9 +14,6 @@ const instrumentSerif = localFont({
 export const metadata: Metadata = {
   title: "Portfolio",
   description: "Personal Portfolio",
-  icons: {
-    icon: '/logo.avif',
-  },
 };
 
 export default function RootLayout({

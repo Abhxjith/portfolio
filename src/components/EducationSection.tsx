@@ -48,7 +48,7 @@ function EducationItem({ institution, degree, date, cgpa, logo, link }: any) {
                     <div className="experience-info">
                         <h3 className="company-name">{institution}</h3>
                         <p className="role-name">{degree}</p>
-                        {cgpa && <p className="role-name" style={{ marginTop: "2px", opacity: 0.8 }}>CGPA: {cgpa}</p>}
+                        {cgpa && <p className="role-name" style={{ marginTop: "2px", color: "var(--text-secondary)" }}>CGPA: {cgpa}</p>}
                     </div>
                     <div className="experience-date">{date}</div>
                 </div>

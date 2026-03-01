@@ -608,7 +608,7 @@ nav {
 }
 
 .about-title {
-  margin-top: 32px;
+  margin-top: 12px;
   font-size: 1.1rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -696,6 +696,7 @@ nav {
 
 /* Category Templates (Dev, Film, etc.) */
 .project-page-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -724,39 +725,57 @@ nav {
 .project-list {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 4rem;
   width: 100%;
-  max-width: 400px;
-  /* Constrain width to keep image/text close */
 }
 
 .project-list-card {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2.5rem;
 }
 
 .project-list-image-placeholder {
-  width: 140px;
-  height: 90px;
-  background-color: white;
-  border-radius: 8px;
+  width: 440px;
+  height: 260px;
+  background-color: #dfdfdf;
+  border-radius: 12px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .project-list-info {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  flex: 1;
+  /* Allow text to take remaining space */
 }
 
 .project-list-title {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 500;
+  margin: 0;
 }
 
 .project-list-description {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .project-list-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .project-list-image-placeholder {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
 }

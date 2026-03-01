@@ -52,7 +52,7 @@ function ExperienceItem({ company, role, date, location, description, logo, link
                     </div>
                     <div className="experience-date">
                         <div>{date}</div>
-                        {location && <div style={{ opacity: 0.7, fontSize: "0.9em", marginTop: "2px", textAlign: "right" }}>{location}</div>}
+                        {location && <div style={{ color: "var(--text-secondary)", fontSize: "0.9em", marginTop: "2px", textAlign: "right" }}>{location}</div>}
                     </div>
                 </div>
                 <div className={`experience-details ${isOpen ? "open" : ""}`}>
