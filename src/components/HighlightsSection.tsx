@@ -96,20 +96,20 @@ export default function HighlightsSection() {
                     </button>
                 )}
 
-                <div className="carousel-track-container" style={{ overflow: "hidden", width: "100%", maxWidth: "600px" }}>
+                <div className="carousel-track-container carousel-container-query" style={{ overflow: "hidden", width: "100%", maxWidth: "600px" }}>
                     {count > 0 ? (
                         <div
                             className="carousel-track carousel-track-double"
                             style={{
-                                width: `${count * 50}%`,
-                                transform: `translateX(calc(-${currentIndex * (100 / count)}% - ${currentIndex * 16}px))`,
+                                width: `calc(${count} * ((100cqw - 16px) / 2) + ${(count - 1) * 16}px)`,
+                                transform: `translateX(calc(-${currentIndex} * ((100cqw - 16px) / 2 + 16px)))`,
                                 transition: "transform 0.4s ease-out",
                                 display: "flex",
                                 gap: "16px",
                             }}
                         >
                             {highlights.map((project) => (
-                                <div key={project._id} className="carousel-slide carousel-slide-double" style={{ flex: `0 0 ${100 / count}%` }}>
+                                <div key={project._id} className="carousel-slide carousel-slide-double" style={{ flex: `0 0 calc((100cqw - 16px) / 2)` }}>
                                     <a href={project.link || "#"} target="_blank" rel="noopener noreferrer" className="project-card" style={{ display: "block", textDecoration: "none", overflow: "hidden", position: "relative" }}>
                                         {project.mediaType === 'image' && project.image && (
                                             <img src={urlFor(project.image).url()} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} />

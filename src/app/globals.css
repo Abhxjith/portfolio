@@ -384,6 +384,11 @@ nav {
   cursor: default;
 }
 
+.carousel-container-query {
+  container-type: inline-size;
+  container-name: carousel;
+}
+
 .carousel-track {
   display: flex;
   gap: 16px;
