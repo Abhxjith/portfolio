@@ -400,6 +400,10 @@ nav {
   gap: 16px;
 }
 
+.carousel-slide-single {
+  display: block;
+}
+
 .project-card {
   width: 100%;
   aspect-ratio: 220 / 160;
