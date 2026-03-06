@@ -400,7 +400,8 @@ nav {
   gap: 16px;
 }
 
-.carousel-slide-single {
+.carousel-slide-single,
+.carousel-slide-double {
   display: block;
 }
 
