@@ -10,7 +10,7 @@ function urlFor(source: any) {
 export const dynamic = 'force-dynamic';
 
 export default async function UIUXPage() {
-    const data = await client.fetch(`*[_type == "uiuxProject"]{
+    const data = await client.fetch(`*[_type == "uiuxProject"] | order(coalesce(rank, 999999) asc, _createdAt asc){
         _id, title, description, thumbnail, "slug": slug.current
     }`);
 

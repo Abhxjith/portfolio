@@ -6,6 +6,13 @@ export const uiuxProjectType = defineType({
     type: 'document',
     fields: [
         defineField({
+            name: 'rank',
+            title: 'Rank',
+            type: 'number',
+            description: 'Lower numbers appear first. Use 1, 2, 3... to control display order.',
+            validation: (rule) => rule.min(0).integer(),
+        }),
+        defineField({
             name: 'title',
             title: 'Title',
             type: 'string',

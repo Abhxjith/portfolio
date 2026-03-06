@@ -10,7 +10,7 @@ function urlFor(source: any) {
 export const dynamic = 'force-dynamic';
 
 export default async function DevPage() {
-    const data = await client.fetch(`*[_type == "devProject"]{
+    const data = await client.fetch(`*[_type == "devProject"] | order(coalesce(rank, 999999) asc, _createdAt asc){
         _id, title, description, image, link
     }`);
 
