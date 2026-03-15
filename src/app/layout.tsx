@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Navigation from "../components/Navigation";
 import BottomNav from "../components/BottomNav";
+import LoadingScreen from "../components/LoadingScreen";
 import { getSiteMetadata } from "../sanity/lib/metadata";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -62,12 +63,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} ${instrumentSerif.variable}`}>
+        <LoadingScreen />
         <Navigation />
-
         <main className="content-area">
           {children}
         </main>
-
         <div className="bottom-vignette"></div>
         <BottomNav />
       </body>

@@ -82,6 +82,105 @@
   }
 }
 
+/* Loading screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  pointer-events: all;
+}
+
+.loading-screen--exit {
+  pointer-events: none;
+}
+
+.loading-panel {
+  flex: 1;
+  height: 100%;
+  background-color: var(--capsule-bg);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.loading-screen--exit .loading-panel {
+  transform: translateY(-100%);
+}
+
+.loading-screen--exit .loading-panel:nth-child(1) { transition-delay: 0s; }
+.loading-screen--exit .loading-panel:nth-child(2) { transition-delay: 0.1s; }
+.loading-screen--exit .loading-panel:nth-child(3) { transition-delay: 0.2s; }
+.loading-screen--exit .loading-panel:nth-child(4) { transition-delay: 0.3s; }
+
+.loading-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+.loading-screen--exit .loading-content {
+  opacity: 0;
+}
+
+.loading-screen__text {
+  font-family: var(--font-instrument-serif), serif;
+  font-size: clamp(4rem, 12vw, 8rem);
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.05em;
+  margin: 0;
+  line-height: 1;
+}
+
+body:not(.loading-done) .top-nav,
+body:not(.loading-done) .content-area,
+body:not(.loading-done) .bottom-vignette,
+body:not(.loading-done) .bottom-capsule {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body:not(.loading-done) .content-area,
+body:not(.loading-done) .bottom-capsule,
+body:not(.loading-done) .hero-name-curve,
+body:not(.loading-done) .avatar-wrapper,
+body:not(.loading-done) .highlights-section,
+body:not(.loading-done) .experience-section {
+  animation: none;
+}
+
+body.loading-done .top-nav {
+  animation: fadeSlideDown 0.6s ease-out 0.1s both;
+}
+
+body.loading-done .content-area {
+  animation: fadeSlideUp 0.55s ease-out 0.15s both;
+}
+
+body.loading-done .hero-name-curve {
+  animation: fadeIn 1.5s ease-out 0.2s both;
+}
+
+body.loading-done .avatar-wrapper {
+  animation: avatarReveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+}
+
+body.loading-done .highlights-section {
+  animation: fadeSlideUp 0.55s ease-out 0.1s both;
+}
+
+body.loading-done .experience-section {
+  animation: fadeSlideUp 0.55s ease-out 0.2s both;
+}
+
+body.loading-done .bottom-capsule.animate-on-home {
+  animation: capsuleSlideUp 0.6s ease-out 0.25s both;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -108,7 +207,6 @@ body {
   display: flex;
   justify-content: center;
   z-index: 10;
-  animation: fadeSlideDown 0.6s ease-out both;
 }
 
 nav {
@@ -152,7 +250,6 @@ nav {
   padding: 0 24px 240px 24px;
   display: flex;
   flex-direction: column;
-  animation: fadeSlideUp 0.5s ease-out both;
 }
 
 /* Bottom capsule navbar */
@@ -334,7 +431,7 @@ nav {
   padding: 10px 12px 10px 16px;
   background: rgba(30, 30, 30, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 999px;
   color: var(--text-primary);
   font-family: ui-monospace, "SF Mono", Monaco, "Cascadia Code", monospace;
   font-size: 0.9rem;
@@ -365,7 +462,7 @@ nav {
   padding: 6px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
   color: var(--text-secondary);
   cursor: pointer;
   transition: color 0.2s, background 0.2s;

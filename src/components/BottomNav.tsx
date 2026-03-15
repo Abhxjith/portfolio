@@ -18,7 +18,7 @@ export default function BottomNav() {
     const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
     return (
-        <nav className="bottom-capsule" onMouseLeave={() => setHoveredPath(null)}>
+        <nav className={`bottom-capsule ${pathname === "/" ? "animate-on-home" : ""}`} onMouseLeave={() => setHoveredPath(null)}>
             {navItems.map((item) => {
                 const isActive = item.path === pathname || (item.path === "/blogs" && pathname.startsWith("/blogs"));
                 const isHovered = hoveredPath === item.path;

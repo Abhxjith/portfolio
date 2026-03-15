@@ -12,6 +12,8 @@ const realClient = createClient({
 const mockClient = {
   fetch: () => Promise.resolve([]),
   withConfig: () => mockClient,
+  projectId,
+  dataset,
 }
 
-export const client = isSanityConfigured ? realClient : mockClient
+export const client = (isSanityConfigured ? realClient : mockClient) as ReturnType<typeof createClient>
