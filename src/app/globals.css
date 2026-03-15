@@ -478,6 +478,64 @@ nav {
   outline-offset: 2px;
 }
 
+/* Speech bubble: to the left of avatar (bubble right edge = left of avatar) */
+.more-copy-notification {
+  position: fixed;
+  top: 268px;
+  right: calc(50% + 61px + 12px);
+  max-width: 220px;
+  padding: 12px 18px 12px 18px;
+  background: #1a1a1a;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  text-align: left;
+  border-radius: 18px;
+  border: 1px solid var(--capsule-bg);
+  z-index: 99999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  animation: moreNotificationIn 0.35s ease-out both;
+  pointer-events: none;
+}
+
+.more-copy-notification::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -7px;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+  border-left-color: var(--capsule-bg);
+  border-right: none;
+  transform: translateY(-50%);
+}
+
+.more-copy-notification::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-left-color: #1a1a1a;
+  border-right: none;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+@keyframes moreNotificationIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
 /* Highlights Section */
 .highlights-section {
   display: flex;
