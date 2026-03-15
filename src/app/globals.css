@@ -478,11 +478,11 @@ nav {
   outline-offset: 2px;
 }
 
-/* Speech bubble: to the left of avatar (bubble right edge = left of avatar) */
+/* Toast: top-right like Toastify, same speech-bubble shape */
 .more-copy-notification {
   position: fixed;
-  top: 268px;
-  right: calc(50% + 61px + 12px);
+  top: 20px;
+  right: 20px;
   max-width: 220px;
   padding: 12px 18px 12px 18px;
   background: #1a1a1a;
@@ -496,6 +496,9 @@ nav {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
   animation: moreNotificationIn 0.35s ease-out both;
   pointer-events: none;
+}
+.more-copy-notification.more-copy-notification-fade-out {
+  animation: moreNotificationOut 0.5s ease-out forwards;
 }
 
 .more-copy-notification::after {
@@ -528,11 +531,21 @@ nav {
 @keyframes moreNotificationIn {
   from {
     opacity: 0;
-    transform: translateX(10px) scale(0.96);
+    transform: translateX(24px);
   }
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
+  }
+}
+@keyframes moreNotificationOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px);
   }
 }
 

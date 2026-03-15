@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 const COMMAND = "npx abhijith";
+const COPIED_MESSAGE = "Paste in terminal :3";
 
 function CopyIcon() {
   return (
@@ -23,41 +25,84 @@ function CheckIcon() {
 
 export default function MoreSection() {
   const [copied, setCopied] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [fading, setFading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const copy = useCallback(async () => {
+    let didCopy = false;
     try {
-      await navigator.clipboard.writeText(COMMAND);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(COMMAND);
+        didCopy = true;
+      }
     } catch {
-      const ta = document.createElement("textarea");
-      ta.value = COMMAND;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      /* clipboard API failed (e.g. non-HTTPS), try fallback */
     }
+    if (!didCopy && typeof document !== "undefined") {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = COMMAND;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        didCopy = true;
+      } catch {
+        /* fallback copy failed */
+      }
+    }
+    setCopied(didCopy);
+    setShowNotification(true);
+    setFading(false);
+    setTimeout(() => setCopied(false), 1500);
+    setTimeout(() => setFading(true), 1500);
+    setTimeout(() => setShowNotification(false), 2100);
   }, []);
 
+  const portalTarget =
+    mounted && typeof document !== "undefined"
+      ? document.body
+      : null;
+  const notificationEl =
+    showNotification && portalTarget
+      ? createPortal(
+          <div
+            className={`more-copy-notification${fading ? " more-copy-notification-fade-out" : ""}`}
+            role="status"
+            aria-live="polite"
+          >
+            {COPIED_MESSAGE}
+          </div>,
+          portalTarget
+        )
+      : null;
+
   return (
-    <div className="more-section">
-      <div className="more-command-wrap">
-        <div className="more-command">
-          <span className="more-prompt">%</span>
-          <code>{COMMAND}</code>
+    <>
+      <div className="more-section">
+        <div className="more-command-wrap">
+          <div className="more-command">
+            <span className="more-prompt">%</span>
+            <code>{COMMAND}</code>
+          </div>
+          <button
+            type="button"
+            className="more-copy-btn"
+            onClick={copy}
+            aria-label={`Copy ${COMMAND}`}
+            title="Copy"
+          >
+            {copied ? <CheckIcon /> : <CopyIcon />}
+          </button>
         </div>
-        <button
-          type="button"
-          className="more-copy-btn"
-          onClick={copy}
-          aria-label={`Copy ${COMMAND}`}
-          title="Copy"
-        >
-          {copied ? <CheckIcon /> : <CopyIcon />}
-        </button>
       </div>
-    </div>
+      {notificationEl}
+    </>
   );
 }
