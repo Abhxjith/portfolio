@@ -19,7 +19,7 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    if (localStorage.getItem(STORAGE_KEY)) {
+    if (sessionStorage.getItem(STORAGE_KEY)) {
       setShowOnce(false);
       setVisible(false);
       document.body.classList.add("loading-done");
@@ -48,7 +48,7 @@ export default function LoadingScreen() {
       if (isLoaded && isTimeUp) {
         document.body.classList.add("loading-done");
         document.body.classList.remove("loading");
-        localStorage.setItem(STORAGE_KEY, "1");
+        sessionStorage.setItem(STORAGE_KEY, "1");
         setPhase("slide");
         setTimeout(() => setVisible(false), SLIDE_DURATION_MS + 100);
       }
