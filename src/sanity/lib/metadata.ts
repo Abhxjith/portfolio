@@ -1,6 +1,3 @@
-import { client } from './client'
-import { urlFor } from './image'
-
 const DEFAULT_METADATA = {
   siteTitle: 'Product & Design-First Software Engineer | Abhijith',
   siteDescription:
@@ -35,7 +32,12 @@ export type SiteMetadata = {
 }
 
 export async function getSiteMetadata(): Promise<SiteMetadata> {
+  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || !process.env.NEXT_PUBLIC_SANITY_DATASET) {
+    return DEFAULT_METADATA as SiteMetadata
+  }
   try {
+    const { client } = await import('./client')
+    const { urlFor } = await import('./image')
     const data = await client.fetch<{
       siteTitle?: string
       siteDescription?: string

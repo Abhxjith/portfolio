@@ -1,6 +1,7 @@
 import Image from "next/image";
 import InteractiveAvatar from "./ui/InteractiveAvatar";
 import { BlurredStagger } from "./ui/blurred-stagger-text";
+import MoreSection from "./MoreSection";
 import { client } from "../sanity/lib/client";
 import { PortableText } from "@portabletext/react";
 import imageUrlBuilder from '@sanity/image-url';
@@ -53,6 +54,8 @@ export default async function HeroSection() {
             <div className="hero-subtitle">
                 <BlurredStagger text={settings?.jobTitle || "dev @ schapira"} />
             </div>
+
+            <MoreSection />
 
             <div className="hero-description" style={{ width: "100%", maxWidth: "600px", textAlign: "center", margin: "32px auto 0 auto" }}>
                 {settings?.heroDescription ? (

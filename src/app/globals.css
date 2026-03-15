@@ -319,6 +319,68 @@ nav {
   line-height: 1.6;
 }
 
+/* More section (terminal-style npx abhijith + copy icon) */
+.more-section {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.more-command-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 10px 12px 10px 16px;
+  background: rgba(30, 30, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: ui-monospace, "SF Mono", Monaco, "Cascadia Code", monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.more-command {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.more-prompt {
+  color: var(--capsule-bg);
+  user-select: none;
+}
+
+.more-command code {
+  font-family: inherit;
+}
+
+.more-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12px;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.more-copy-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.more-copy-btn:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
 /* Highlights Section */
 .highlights-section {
   display: flex;
