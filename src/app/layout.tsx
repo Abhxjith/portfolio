@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Navigation from "../components/Navigation";
 import BottomNav from "../components/BottomNav";
@@ -70,6 +71,7 @@ export default function RootLayout({
         </main>
         <div className="bottom-vignette"></div>
         <BottomNav />
+        <Analytics />
       </body>
     </html>
   );
