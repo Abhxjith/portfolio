@@ -30,9 +30,10 @@ const ptComponents = {
 };
 
 export default async function HeroSection() {
-    const settings = await client.fetch(`*[_type == "siteSettings"][0]{
-        jobTitle, heroDescription
-    }`);
+    const settings = await client.fetch<{ jobTitle?: string | null; heroDescription?: unknown } | null>(
+        `*[_type == "siteSettings"][0]{ jobTitle, heroDescription }`
+    );
+    const jobTitle = settings?.jobTitle?.trim() || "dev @ schapira";
 
     return (
         <div className="hero-section">
@@ -52,7 +53,7 @@ export default async function HeroSection() {
             </div>
 
             <div className="hero-subtitle">
-                <BlurredStagger text={settings?.jobTitle || "dev @ schapira"} />
+                <BlurredStagger text={jobTitle} />
             </div>
 
             <MoreSection />
