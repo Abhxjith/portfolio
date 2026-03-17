@@ -4,6 +4,8 @@ import ExperienceSection from "../components/ExperienceSection";
 import SkillStackSection from "../components/SkillStackSection";
 import EducationSection from "../components/EducationSection";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <>
