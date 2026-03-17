@@ -3,7 +3,7 @@ import InteractiveAvatar from "./ui/InteractiveAvatar";
 import { BlurredStagger } from "./ui/blurred-stagger-text";
 import MoreSection from "./MoreSection";
 import { client } from "../sanity/lib/client";
-import { PortableText } from "@portabletext/react";
+import { PortableText, type PortableTextBlock } from "@portabletext/react";
 import imageUrlBuilder from '@sanity/image-url';
 
 const builder = imageUrlBuilder(client);
@@ -30,10 +30,10 @@ const ptComponents = {
 };
 
 export default async function HeroSection() {
-    const settings = await client.fetch<{ jobTitle?: string | null; heroDescription?: unknown } | null>(
+    const settings = await client.fetch<{ jobTitle?: string | null; heroDescription?: PortableTextBlock[] | null } | null>(
         `*[_type == "siteSettings"][0]{ jobTitle, heroDescription }`
     );
-    const jobTitle = settings?.jobTitle?.trim() || "dev @ schapira";
+    const jobTitle = settings?.jobTitle?.trim() || "product engineer @ heave";
 
     return (
         <div className="hero-section">

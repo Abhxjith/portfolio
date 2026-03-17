@@ -13,7 +13,7 @@ export const siteSettingsType = defineType({
             name: 'jobTitle',
             title: 'Job Title (Hero Subtitle)',
             type: 'string',
-            description: 'e.g. dev @ schapira',
+            description: 'e.g. product engineer @ heave',
             group: 'content',
         }),
         defineField({
