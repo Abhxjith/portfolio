@@ -17,7 +17,7 @@ interface Star {
 export default function Navigation() {
     const pathname = usePathname();
     const [stars, setStars] = useState<Star[]>([]);
-    const [resumeUrl, setResumeUrl] = useState("/resume"); // Fallback if not found
+    const [resumeUrl, setResumeUrl] = useState("/resume");
 
     useEffect(() => {
         const fetchResume = async () => {
@@ -36,19 +36,17 @@ export default function Navigation() {
     }, []);
 
     const triggerStars = useCallback(() => {
-        // Generate 30-40 random stars
         const newStars: Star[] = Array.from({ length: 35 }).map(() => ({
             id: Math.random(),
-            left: Math.random() * 100, // random left percentage 0-100%
-            size: Math.random() * 1.5 + 0.5, // 0.5rem to 2.0rem size
-            duration: Math.random() * 2 + 1.5, // 1.5s to 3.5s fall duration
-            delay: Math.random() * 0.5, // 0s to 0.5s stagger delay
+            left: Math.random() * 100,
+            size: Math.random() * 1.5 + 0.5,
+            duration: Math.random() * 2 + 1.5,
+            delay: Math.random() * 0.5,
             color: Math.random() > 0.5 ? "var(--text-primary)" : "var(--capsule-bg)",
         }));
 
         setStars((prev) => [...prev, ...newStars]);
 
-        // Cleanup stars after they finish falling (max duration + max delay + buffer = ~4.5s)
         setTimeout(() => {
             setStars((prev) => prev.filter(star => !newStars.find(s => s.id === star.id)));
         }, 4500);
@@ -56,7 +54,6 @@ export default function Navigation() {
 
     return (
         <>
-            {/* Raining Stars Container */}
             <div className="raining-stars-container">
                 {stars.map((star) => (
                     <div

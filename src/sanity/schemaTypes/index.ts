@@ -11,7 +11,8 @@ import { educationType } from './education'
 import { skillType } from './skill'
 import { aboutPageType } from './aboutPage'
 import { filmRecommendationType } from './filmRecommendation'
+import { musicType } from './music'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [artType, devProjectType, uiuxProjectType, filmType, blogType, siteSettingsType, highlightType, experienceType, educationType, skillType, aboutPageType, filmRecommendationType],
+  types: [artType, devProjectType, uiuxProjectType, filmType, blogType, musicType, siteSettingsType, highlightType, experienceType, educationType, skillType, aboutPageType, filmRecommendationType],
 }

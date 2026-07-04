@@ -5,16 +5,30 @@ import { usePathname } from "next/navigation";
 import { BlurredStagger } from "./ui/blurred-stagger-text";
 
 const STORAGE_KEY = "loading-screen-seen";
-const MIN_DISPLAY_MS = 2200;
 const SLIDE_DURATION_MS = 1000;
+const HELLO_ANIMATION_MS = 1000;
+const GREETING_HOLD_MS = 350;
+
+const GREETINGS = [
+  { text: "Hello.", animate: true, lang: "en" },
+  { text: "നമസ്കാരം.", animate: false, lang: "ml" },
+  { text: "नमस्ते.", animate: false, lang: "hi" },
+  { text: "नमस्कार.", animate: false, lang: "mr" },
+  { text: "Hola.", animate: false, lang: "es" },
+] as const;
+
+const MIN_DISPLAY_MS =
+  HELLO_ANIMATION_MS + (GREETINGS.length - 1) * GREETING_HOLD_MS + 400;
 
 export default function LoadingScreen() {
   const pathname = usePathname();
   const [phase, setPhase] = useState<"show" | "slide">("show");
   const [visible, setVisible] = useState(true);
   const [showOnce, setShowOnce] = useState<boolean | null>(null);
+  const [greetingIndex, setGreetingIndex] = useState(0);
 
   const isHome = pathname === "/";
+  const currentGreeting = GREETINGS[greetingIndex];
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -28,6 +42,20 @@ export default function LoadingScreen() {
     }
     setShowOnce(true);
   }, []);
+
+  useEffect(() => {
+    if (phase !== "show" || showOnce !== true) return;
+    if (greetingIndex >= GREETINGS.length - 1) return;
+
+    const delay =
+      greetingIndex === 0 ? HELLO_ANIMATION_MS : GREETING_HOLD_MS;
+
+    const timer = setTimeout(() => {
+      setGreetingIndex((i) => i + 1);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [greetingIndex, phase, showOnce]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -83,9 +111,16 @@ export default function LoadingScreen() {
       <div className="loading-panel" />
       <div className="loading-panel" />
       <div className="loading-content">
-        <h1 className="loading-screen__text">
-          {phase === "show" && <BlurredStagger text="Hello." />}
-          {phase === "slide" && <span>Hello.</span>}
+        <h1
+          className={`loading-screen__text loading-screen__text--${currentGreeting.lang}`}
+        >
+          {phase === "show" && currentGreeting.animate && (
+            <BlurredStagger text={currentGreeting.text} />
+          )}
+          {phase === "show" && !currentGreeting.animate && (
+            <span>{currentGreeting.text}</span>
+          )}
+          {phase === "slide" && <span>{currentGreeting.text}</span>}
         </h1>
       </div>
     </div>

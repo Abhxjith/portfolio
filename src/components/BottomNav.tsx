@@ -23,7 +23,6 @@ export default function BottomNav() {
                 const isActive = item.path === pathname || (item.path === "/blogs" && pathname.startsWith("/blogs"));
                 const isHovered = hoveredPath === item.path;
 
-                // Show indicator if hovered, OR if it's active and nothing is hovered
                 const showIndicator = isHovered || (isActive && !hoveredPath);
 
                 return (

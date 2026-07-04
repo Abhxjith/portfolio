@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Noto_Sans_Devanagari, Noto_Sans_Malayalam } from "next/font/google";
 import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -12,6 +12,16 @@ const inter = Inter({ subsets: ["latin"] });
 const instrumentSerif = localFont({
   src: "../../public/instrument-serif/instrumentserif-regular.ttf",
   variable: "--font-instrument-serif",
+  display: "swap",
+});
+const notoMalayalam = Noto_Sans_Malayalam({
+  subsets: ["malayalam"],
+  variable: "--font-noto-malayalam",
+  display: "swap",
+});
+const notoDevanagari = Noto_Sans_Devanagari({
+  subsets: ["devanagari"],
+  variable: "--font-noto-devanagari",
   display: "swap",
 });
 
@@ -63,7 +73,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${instrumentSerif.variable}`}>
+      <body className={`${inter.className} ${instrumentSerif.variable} ${notoMalayalam.variable} ${notoDevanagari.variable}`}>
         <LoadingScreen />
         <Navigation />
         <main className="content-area">
