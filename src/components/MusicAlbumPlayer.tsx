@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import MusicPlayerBar from "./MusicPlayerBar";
+import { setMusicPlayerBarActive } from "@/lib/musicPlayerChrome";
 
 export type MusicTrack = {
   title: string;
@@ -97,6 +99,30 @@ function getNextPlayableIndex(tracks: MusicTrack[], fromIndex: number) {
   return null;
 }
 
+function getPreviousPlayableIndex(tracks: MusicTrack[], fromIndex: number) {
+  for (let index = fromIndex - 1; index >= 0; index -= 1) {
+    if (tracks[index]?.url) return index;
+  }
+  return null;
+}
+
+function getLastPlayableIndex(tracks: MusicTrack[]) {
+  for (let index = tracks.length - 1; index >= 0; index -= 1) {
+    if (tracks[index]?.url) return index;
+  }
+  return null;
+}
+
+function getRandomPlayableIndex(
+  tracks: MusicTrack[],
+  playableTrackIndexes: number[],
+  excludeIndex?: number
+) {
+  const candidates = playableTrackIndexes.filter((index) => index !== excludeIndex);
+  if (candidates.length === 0) return excludeIndex ?? playableTrackIndexes[0] ?? 0;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
 function getInitialPlayableIndex(tracks: MusicTrack[]) {
   const index = tracks.findIndex((track) => Boolean(track.url));
   return index >= 0 ? index : 0;
@@ -128,6 +154,26 @@ export default function MusicAlbumPlayer({
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [durations, setDurations] = useState<Record<number, number>>({});
   const [hoveredTrackIndex, setHoveredTrackIndex] = useState<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [shuffle, setShuffle] = useState(false);
+  const [repeat, setRepeat] = useState<"off" | "all" | "one">("off");
+  const [volume, setVolume] = useState(1);
+  const shuffleRef = useRef(shuffle);
+  const repeatRef = useRef(repeat);
+
+  useEffect(() => {
+    shuffleRef.current = shuffle;
+  }, [shuffle]);
+
+  useEffect(() => {
+    repeatRef.current = repeat;
+  }, [repeat]);
+
+  useLayoutEffect(() => {
+    const shouldShowPlayerBar = hasPlayableTracks && !isAppleMusic;
+    setMusicPlayerBarActive(shouldShowPlayerBar);
+    return () => setMusicPlayerBarActive(false);
+  }, [hasPlayableTracks, isAppleMusic]);
 
   const showDescriptionToggle =
     description && description.length > DESCRIPTION_PREVIEW_LENGTH;
@@ -171,6 +217,7 @@ export default function MusicAlbumPlayer({
 
       activeTrackIndexRef.current = index;
       setActiveTrackIndex(index);
+      setCurrentTime(0);
 
       const needsLoad = loadedUrlRef.current !== track.url;
       if (needsLoad) {
@@ -228,12 +275,80 @@ export default function MusicAlbumPlayer({
 
   const shufflePlay = useCallback(async () => {
     if (playableTrackIndexes.length === 0) return;
-    const randomIndex =
-      playableTrackIndexes[
-        Math.floor(Math.random() * playableTrackIndexes.length)
-      ];
+    setShuffle(true);
+    const randomIndex = getRandomPlayableIndex(
+      tracks,
+      playableTrackIndexes,
+      activeTrackIndexRef.current
+    );
     await playTrack(randomIndex);
-  }, [playTrack, playableTrackIndexes]);
+  }, [playTrack, playableTrackIndexes, tracks]);
+
+  const playPrevious = useCallback(async () => {
+    if (!hasPlayableTracks) return;
+    const previousIndex = getPreviousPlayableIndex(
+      tracks,
+      activeTrackIndexRef.current
+    );
+    if (previousIndex !== null) {
+      await playTrack(previousIndex);
+      return;
+    }
+    if (repeatRef.current === "all") {
+      const lastIndex = getLastPlayableIndex(tracks);
+      if (lastIndex !== null) await playTrack(lastIndex);
+    }
+  }, [hasPlayableTracks, playTrack, tracks]);
+
+  const playNext = useCallback(async () => {
+    if (!hasPlayableTracks) return;
+
+    if (shuffleRef.current) {
+      const randomIndex = getRandomPlayableIndex(
+        tracks,
+        playableTrackIndexes,
+        activeTrackIndexRef.current
+      );
+      await playTrack(randomIndex);
+      return;
+    }
+
+    const nextIndex = getNextPlayableIndex(tracks, activeTrackIndexRef.current);
+    if (nextIndex !== null) {
+      await playTrack(nextIndex);
+      return;
+    }
+
+    if (repeatRef.current === "all") {
+      const firstIndex = playableTrackIndexes[0];
+      if (firstIndex !== undefined) await playTrack(firstIndex);
+    }
+  }, [hasPlayableTracks, playTrack, playableTrackIndexes, tracks]);
+
+  const seekTo = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(time)) return;
+    audio.currentTime = time;
+    setCurrentTime(time);
+  }, []);
+
+  const toggleShuffle = useCallback(() => {
+    setShuffle((value) => !value);
+  }, []);
+
+  const toggleRepeat = useCallback(() => {
+    setRepeat((mode) => {
+      if (mode === "off") return "all";
+      if (mode === "all") return "one";
+      return "off";
+    });
+  }, []);
+
+  const handleVolumeChange = useCallback((nextVolume: number) => {
+    const audio = audioRef.current;
+    setVolume(nextVolume);
+    if (audio) audio.volume = nextVolume;
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -252,6 +367,26 @@ export default function MusicAlbumPlayer({
     if (!audio) return;
 
     const handleEnded = () => {
+      if (repeatRef.current === "one") {
+        const audio = audioRef.current;
+        if (audio) {
+          audio.currentTime = 0;
+          setCurrentTime(0);
+          void audio.play();
+        }
+        return;
+      }
+
+      if (shuffleRef.current) {
+        const randomIndex = getRandomPlayableIndex(
+          tracks,
+          playableTrackIndexes,
+          activeTrackIndexRef.current
+        );
+        void playTrack(randomIndex);
+        return;
+      }
+
       const nextIndex = getNextPlayableIndex(
         tracks,
         activeTrackIndexRef.current
@@ -260,7 +395,17 @@ export default function MusicAlbumPlayer({
         void playTrack(nextIndex);
         return;
       }
+
+      if (repeatRef.current === "all") {
+        const firstIndex = playableTrackIndexes[0];
+        if (firstIndex !== undefined) {
+          void playTrack(firstIndex);
+          return;
+        }
+      }
+
       setIsPlaying(false);
+      setCurrentTime(0);
       const firstPlayable = playableTrackIndexes[0] ?? 0;
       activeTrackIndexRef.current = firstPlayable;
       setActiveTrackIndex(firstPlayable);
@@ -271,6 +416,10 @@ export default function MusicAlbumPlayer({
       setIsPlaying(false);
     };
 
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
     const handleLoadedMetadata = () => {
       if (audio.duration && Number.isFinite(audio.duration)) {
         setDurations((prev) => ({
@@ -278,14 +427,17 @@ export default function MusicAlbumPlayer({
           [activeTrackIndexRef.current]: audio.duration,
         }));
       }
+      setCurrentTime(audio.currentTime);
     };
 
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("pause", handlePause);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     return () => {
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, [hasPlayableTracks, isAppleMusic, playTrack, playableTrackIndexes, tracks]);
@@ -300,6 +452,7 @@ export default function MusicAlbumPlayer({
         : undefined;
     if (!audio || !firstUrl) return;
     audio.src = firstUrl;
+    audio.volume = volume;
     loadedUrlRef.current = firstUrl;
     activeTrackIndexRef.current = firstPlayableIndex;
     setActiveTrackIndex(firstPlayableIndex);
@@ -331,7 +484,13 @@ export default function MusicAlbumPlayer({
         probe.src = "";
       });
     };
-  }, [hasPlayableTracks, isAppleMusic, tracks]);
+  }, [hasPlayableTracks, isAppleMusic, playableTrackIndexes, tracks, volume]);
+
+  const activeDuration =
+    durations[activeTrackIndex] ??
+    (audioRef.current?.duration && Number.isFinite(audioRef.current.duration)
+      ? audioRef.current.duration
+      : 0);
 
   return (
     <div className="music-detail-player">
@@ -485,6 +644,24 @@ export default function MusicAlbumPlayer({
 
       {!isAppleMusic && hasPlayableTracks && (
         <audio ref={audioRef} preload="metadata" />
+      )}
+
+      {!isAppleMusic && hasPlayableTracks && (
+        <MusicPlayerBar
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={activeDuration}
+          shuffle={shuffle}
+          repeat={repeat}
+          volume={volume}
+          onTogglePlay={() => void togglePlayback()}
+          onPrevious={() => void playPrevious()}
+          onNext={() => void playNext()}
+          onSeek={seekTo}
+          onToggleShuffle={toggleShuffle}
+          onToggleRepeat={toggleRepeat}
+          onVolumeChange={handleVolumeChange}
+        />
       )}
     </div>
   );
