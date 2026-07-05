@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import MusicAlbumPlayer from "@/components/MusicAlbumPlayer";
+import MusicDetailBackButton from "@/components/MusicDetailBackButton";
 import { client } from "@/sanity/lib/client";
 import imageUrlBuilder from "@sanity/image-url";
 
@@ -77,17 +77,7 @@ export default async function MusicAlbumPage({
 
   return (
     <div className="music-detail-page">
-      <Link href="/art" className="music-detail-back" aria-label="Back to art">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-          <path
-            d="M11 4L6 9l5 5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </Link>
+      <MusicDetailBackButton />
 
       <MusicAlbumPlayer
         title={album.title}

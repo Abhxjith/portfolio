@@ -12,17 +12,21 @@
     "@portabletext/react": "^6.0.2",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.22.0",
+    "@tailwindcss/postcss": "^4.3.2",
     "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.3",
+    "lucide-react": "^1.23.0",
     "motion": "^12.34.3",
     "next": "16.1.6",
     "next-sanity": "^11.6.12",
+    "postcss": "^8.5.16",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "sanity": "^4.22.0",
     "styled-components": "^6.3.11",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.3.2"
   },
   "devDependencies": {
     "@types/node": "^20",

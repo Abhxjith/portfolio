@@ -18,6 +18,7 @@ export default function Navigation() {
     const pathname = usePathname();
     const [stars, setStars] = useState<Star[]>([]);
     const [resumeUrl, setResumeUrl] = useState("/resume");
+    const hideOnMusicAlbum = pathname.startsWith("/art/music/");
 
     useEffect(() => {
         const fetchResume = async () => {
@@ -51,6 +52,10 @@ export default function Navigation() {
             setStars((prev) => prev.filter(star => !newStars.find(s => s.id === star.id)));
         }, 4500);
     }, []);
+
+    if (hideOnMusicAlbum) {
+        return null;
+    }
 
     return (
         <>

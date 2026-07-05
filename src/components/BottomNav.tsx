@@ -2,12 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-    getMusicPlayerBarActive,
-    subscribeMusicPlayerBarActive,
-} from "@/lib/musicPlayerChrome";
 
 const navItems = [
     { name: "dev", path: "/dev" },
@@ -20,16 +16,8 @@ const navItems = [
 export default function BottomNav() {
     const pathname = usePathname();
     const [hoveredPath, setHoveredPath] = useState<string | null>(null);
-    const [hideForMusicPlayer, setHideForMusicPlayer] = useState(false);
 
-    useEffect(() => {
-        setHideForMusicPlayer(getMusicPlayerBarActive());
-        return subscribeMusicPlayerBarActive(() => {
-            setHideForMusicPlayer(getMusicPlayerBarActive());
-        });
-    }, []);
-
-    if (pathname.startsWith("/art/music/") && hideForMusicPlayer) {
+    if (pathname.startsWith("/art/music/")) {
         return null;
     }
 

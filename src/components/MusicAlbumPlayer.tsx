@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import MusicPlayerBar from "./MusicPlayerBar";
-import { setMusicPlayerBarActive } from "@/lib/musicPlayerChrome";
 
 export type MusicTrack = {
   title: string;
@@ -152,6 +151,9 @@ export default function MusicAlbumPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTrackIndex, setActiveTrackIndex] = useState(initialPlayableIndex);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
+  const [descriptionOverflows, setDescriptionOverflows] = useState(false);
+  const descriptionRef = useRef<HTMLParagraphElement>(null);
   const [durations, setDurations] = useState<Record<number, number>>({});
   const [hoveredTrackIndex, setHoveredTrackIndex] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -169,25 +171,57 @@ export default function MusicAlbumPlayer({
     repeatRef.current = repeat;
   }, [repeat]);
 
-  useLayoutEffect(() => {
-    const shouldShowPlayerBar = hasPlayableTracks && !isAppleMusic;
-    setMusicPlayerBarActive(shouldShowPlayerBar);
-    return () => setMusicPlayerBarActive(false);
-  }, [hasPlayableTracks, isAppleMusic]);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const updateLayout = () => setIsMobileLayout(mediaQuery.matches);
+    updateLayout();
+    mediaQuery.addEventListener("change", updateLayout);
+    return () => mediaQuery.removeEventListener("change", updateLayout);
+  }, []);
 
-  const showDescriptionToggle =
-    description && description.length > DESCRIPTION_PREVIEW_LENGTH;
+  const measureDescriptionOverflow = useCallback(() => {
+    if (!description) {
+      setDescriptionOverflows(false);
+      return;
+    }
+
+    if (descriptionExpanded) return;
+
+    const element = descriptionRef.current;
+    if (!element) return;
+
+    if (isMobileLayout) {
+      setDescriptionOverflows(
+        element.scrollWidth > element.clientWidth + 1 ||
+          element.scrollHeight > element.clientHeight + 1
+      );
+      return;
+    }
+
+    setDescriptionOverflows(description.length > DESCRIPTION_PREVIEW_LENGTH);
+  }, [description, descriptionExpanded, isMobileLayout]);
+
+  const showDescriptionToggle = Boolean(description && descriptionOverflows);
   const descriptionPreview = description
-    ? descriptionExpanded || !showDescriptionToggle
+    ? descriptionExpanded
       ? description
-      : `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH).trim()}...`
+      : isMobileLayout
+        ? description
+        : description.length > DESCRIPTION_PREVIEW_LENGTH
+          ? `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH).trim()}...`
+          : description
     : "";
 
-  const metaParts = [
-    genre,
-    isPreRelease ? "PRE-RELEASE" : null,
-    year?.toString(),
-  ].filter(Boolean);
+  useLayoutEffect(() => {
+    measureDescriptionOverflow();
+  }, [measureDescriptionOverflow, descriptionPreview, isMobileLayout]);
+
+  useEffect(() => {
+    window.addEventListener("resize", measureDescriptionOverflow);
+    return () => window.removeEventListener("resize", measureDescriptionOverflow);
+  }, [measureDescriptionOverflow]);
+
+  const metaParts = [genre, year?.toString()].filter(Boolean);
 
   const totalDurationSeconds = Object.values(durations).reduce(
     (sum, value) => sum + value,
@@ -504,24 +538,36 @@ export default function MusicAlbumPlayer({
         <div className="music-detail-meta-col">
           <div className="music-detail-title-row">
             <h1 className="music-detail-album-title">{title}</h1>
-            {isPreRelease && (
-              <span className="music-pre-release-badge">PRE-RELEASE</span>
-            )}
           </div>
           {metaParts.length > 0 && (
             <p className="music-detail-meta-line">{metaParts.join(" · ")}</p>
           )}
 
           {description && (
-            <div className="music-detail-description-wrap">
-              <p className="music-detail-description">{descriptionPreview}</p>
-              {showDescriptionToggle && (
+            <div
+              className={`music-detail-description-wrap ${descriptionExpanded ? "music-detail-description-wrap--expanded" : ""}`}
+            >
+              <div className="music-detail-description-line">
+                <p ref={descriptionRef} className="music-detail-description">
+                  {descriptionPreview}
+                </p>
+                {isMobileLayout && showDescriptionToggle && !descriptionExpanded && (
+                  <button
+                    type="button"
+                    className="music-detail-more-btn music-detail-more-btn--inline"
+                    onClick={() => setDescriptionExpanded(true)}
+                  >
+                    more
+                  </button>
+                )}
+              </div>
+              {showDescriptionToggle && (!isMobileLayout || descriptionExpanded) && (
                 <button
                   type="button"
                   className="music-detail-more-btn"
                   onClick={() => setDescriptionExpanded((value) => !value)}
                 >
-                  {descriptionExpanded ? "LESS" : "MORE"}
+                  {descriptionExpanded ? (isMobileLayout ? "less" : "LESS") : "MORE"}
                 </button>
               )}
             </div>
@@ -636,8 +682,8 @@ export default function MusicAlbumPlayer({
           </p>
         </div>
         <p className="music-detail-footer-legal">
-          all license to me or whomsoever it may concern bc i dont remember some
-          of the samples where i took it from. non profit.
+          all license to me and whomsoever it may concern bc i cant recall all
+          the samples. all non profit.
         </p>
         <p className="music-detail-footer-legal">© 2026 Abhijith</p>
       </footer>
@@ -646,8 +692,12 @@ export default function MusicAlbumPlayer({
         <audio ref={audioRef} preload="metadata" />
       )}
 
-      {!isAppleMusic && hasPlayableTracks && (
+      {!isAppleMusic && (
         <MusicPlayerBar
+          albumTitle={title}
+          artworkUrl={artworkUrl}
+          trackTitle={tracks[activeTrackIndex]?.title ?? tracks[0]?.title ?? title}
+          playbackDisabled={isPreRelease}
           isPlaying={isPlaying}
           currentTime={currentTime}
           duration={activeDuration}
