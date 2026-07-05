@@ -1305,6 +1305,14 @@ nav {
   color: inherit;
 }
 
+.music-album-title-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  max-width: 100%;
+}
+
 .music-album-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -1428,12 +1436,12 @@ nav {
 }
 
 .music-detail-album-title {
-  font-size: clamp(2rem, 4.5vw, 2.75rem);
-  font-weight: 700;
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+  font-weight: 500;
   color: var(--text-primary);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   margin: 0;
-  line-height: 1.05;
+  line-height: 1.1;
   text-transform: uppercase;
 }
 
@@ -1441,7 +1449,33 @@ nav {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
+}
+
+.music-explicit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  user-select: none;
+}
+
+.music-explicit-badge--md {
+  width: 16px;
+  height: 16px;
+  font-size: 0.62rem;
+}
+
+.music-explicit-badge--sm {
+  width: 14px;
+  height: 14px;
+  font-size: 0.55rem;
 }
 
 .music-pre-release-badge {
@@ -1654,6 +1688,13 @@ nav {
   align-items: center;
   justify-content: center;
   color: var(--capsule-bg);
+}
+
+.music-track-row-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
 }
 
 .music-track-row-title {

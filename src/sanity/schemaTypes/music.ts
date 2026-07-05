@@ -40,6 +40,13 @@ export const musicType = defineType({
             validation: (rule) => rule.min(1900).max(2100).integer(),
         }),
         defineField({
+            name: 'explicit',
+            title: 'Explicit',
+            type: 'boolean',
+            description: 'Show explicit (E) badge beside the album title',
+            initialValue: false,
+        }),
+        defineField({
             name: 'artwork',
             title: 'Album Artwork',
             type: 'image',
@@ -95,6 +102,13 @@ export const musicType = defineType({
                             validation: (rule) => rule.required(),
                         }),
                         defineField({
+                            name: 'explicit',
+                            title: 'Explicit',
+                            type: 'boolean',
+                            description: 'Show explicit (E) badge beside this track title',
+                            initialValue: false,
+                        }),
+                        defineField({
                             name: 'audioFile',
                             title: 'Audio File (optional)',
                             type: 'file',
@@ -105,9 +119,12 @@ export const musicType = defineType({
                         }),
                     ],
                     preview: {
-                        select: { title: 'title' },
-                        prepare({ title }) {
-                            return { title: title || 'Untitled track' };
+                        select: { title: 'title', explicit: 'explicit' },
+                        prepare({ title, explicit }) {
+                            return {
+                                title: title || 'Untitled track',
+                                subtitle: explicit ? 'Explicit' : undefined,
+                            };
                         },
                     },
                 }),

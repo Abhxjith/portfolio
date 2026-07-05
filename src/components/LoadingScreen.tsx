@@ -14,7 +14,7 @@ const GREETINGS = [
   { text: "നമസ്കാരം.", animate: false, lang: "ml" },
   { text: "नमस्ते.", animate: false, lang: "hi" },
   { text: "नमस्कार.", animate: false, lang: "mr" },
-  { text: "Hola.", animate: false, lang: "es" },
+  { text: "hola!", animate: false, lang: "es" },
 ] as const;
 
 const MIN_DISPLAY_MS =

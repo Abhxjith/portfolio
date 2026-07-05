@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import MusicPlayerBar from "./MusicPlayerBar";
+import MusicExplicitBadge from "./MusicExplicitBadge";
 
 export type MusicTrack = {
   title: string;
   url?: string;
+  explicit?: boolean;
 };
 
 type MusicAlbumPlayerProps = {
@@ -13,6 +15,7 @@ type MusicAlbumPlayerProps = {
   description?: string;
   genre?: string;
   year?: number;
+  explicit?: boolean;
   artworkUrl: string;
   tracks: MusicTrack[];
   appleMusicEmbedUrl?: string;
@@ -132,6 +135,7 @@ export default function MusicAlbumPlayer({
   description,
   genre,
   year,
+  explicit = false,
   artworkUrl,
   tracks,
   appleMusicEmbedUrl,
@@ -538,6 +542,7 @@ export default function MusicAlbumPlayer({
         <div className="music-detail-meta-col">
           <div className="music-detail-title-row">
             <h1 className="music-detail-album-title">{title}</h1>
+            {explicit && <MusicExplicitBadge />}
           </div>
           {metaParts.length > 0 && (
             <p className="music-detail-meta-line">{metaParts.join(" · ")}</p>
@@ -658,7 +663,10 @@ export default function MusicAlbumPlayer({
                         <span className="music-track-row-number">{index + 1}</span>
                       )}
                     </span>
-                    <span className="music-track-row-title">{track.title}</span>
+                    <span className="music-track-row-title-wrap">
+                      <span className="music-track-row-title">{track.title}</span>
+                      {track.explicit && <MusicExplicitBadge size="sm" />}
+                    </span>
                     {duration && (
                       <span className="music-track-row-duration">{duration}</span>
                     )}

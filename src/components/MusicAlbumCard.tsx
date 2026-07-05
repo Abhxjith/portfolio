@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import MusicExplicitBadge from "@/components/MusicExplicitBadge";
 
 export type MusicAlbumPreview = {
   id: string;
@@ -8,6 +9,7 @@ export type MusicAlbumPreview = {
   title: string;
   genre?: string;
   year?: number;
+  explicit?: boolean;
   artworkUrl: string;
 };
 
@@ -42,9 +44,12 @@ export default function MusicAlbumCard({ album }: MusicAlbumCardProps) {
       </Link>
 
       <div className="music-album-info">
-        <Link href={`/art/music/${album.slug}`} className="music-album-title-link">
-          <h3 className="music-album-title">{album.title}</h3>
-        </Link>
+        <div className="music-album-title-row">
+          <Link href={`/art/music/${album.slug}`} className="music-album-title-link">
+            <h3 className="music-album-title">{album.title}</h3>
+          </Link>
+          {album.explicit && <MusicExplicitBadge size="sm" />}
+        </div>
         {formatAlbumMeta(album.genre, album.year) && (
           <p className="music-album-meta">
             {formatAlbumMeta(album.genre, album.year)}

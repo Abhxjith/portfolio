@@ -18,9 +18,11 @@ type MusicDocument = {
   year?: number;
   playbackSource?: string;
   appleMusicEmbedUrl?: string;
+  explicit?: boolean;
   artwork?: unknown;
   tracks?: Array<{
     title?: string;
+    explicit?: boolean;
     audioFile?: {
       asset?: {
         url?: string;
@@ -42,11 +44,13 @@ export default async function MusicAlbumPage({
       description,
       genre,
       year,
+      explicit,
       playbackSource,
       appleMusicEmbedUrl,
       artwork,
       tracks[]{
         title,
+        explicit,
         audioFile {
           asset->{
             url
@@ -69,6 +73,7 @@ export default async function MusicAlbumPage({
     .map((track) => ({
       title: track.title as string,
       url: track.audioFile?.asset?.url,
+      explicit: Boolean(track.explicit),
     }));
 
   if (!isAppleMusic && tracks.length === 0) {
@@ -84,6 +89,7 @@ export default async function MusicAlbumPage({
         description={album.description}
         genre={album.genre}
         year={album.year}
+        explicit={Boolean(album.explicit)}
         artworkUrl={artworkUrl}
         tracks={tracks}
         appleMusicEmbedUrl={

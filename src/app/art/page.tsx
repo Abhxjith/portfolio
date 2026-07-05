@@ -25,6 +25,7 @@ type MusicDocument = {
   slug?: string;
   genre?: string;
   year?: number;
+  explicit?: boolean;
   playbackSource?: string;
   appleMusicEmbedUrl?: string;
   artwork?: unknown;
@@ -50,6 +51,7 @@ export default async function ArtPage() {
         "slug": slug.current,
         genre,
         year,
+        explicit,
         playbackSource,
         appleMusicEmbedUrl,
         artwork,
@@ -80,6 +82,7 @@ export default async function ArtPage() {
       title: album.title,
       genre: album.genre,
       year: album.year,
+      explicit: Boolean(album.explicit),
       playbackSource: album.playbackSource,
       appleMusicEmbedUrl: album.appleMusicEmbedUrl,
       artworkUrl: album.artwork
