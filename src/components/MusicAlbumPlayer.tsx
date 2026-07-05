@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type MusicTrack = {
   title: string;
@@ -47,7 +47,7 @@ function PlayingBars() {
 }
 
 function formatDuration(seconds?: number) {
-  if (!seconds || !Number.isFinite(seconds)) return "--:--";
+  if (!seconds || !Number.isFinite(seconds)) return "";
   const minutes = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
@@ -97,6 +97,11 @@ function getNextPlayableIndex(tracks: MusicTrack[], fromIndex: number) {
   return null;
 }
 
+function getInitialPlayableIndex(tracks: MusicTrack[]) {
+  const index = tracks.findIndex((track) => Boolean(track.url));
+  return index >= 0 ? index : 0;
+}
+
 export default function MusicAlbumPlayer({
   title,
   description,
@@ -107,13 +112,19 @@ export default function MusicAlbumPlayer({
   appleMusicEmbedUrl,
 }: MusicAlbumPlayerProps) {
   const isAppleMusic = Boolean(appleMusicEmbedUrl);
-  const playableTrackIndexes = getPlayableTrackIndexes(tracks);
+  const playableTrackIndexes = useMemo(
+    () => getPlayableTrackIndexes(tracks),
+    [tracks]
+  );
   const hasPlayableTracks = playableTrackIndexes.length > 0;
+  const isPreRelease = !isAppleMusic && !hasPlayableTracks;
+
+  const initialPlayableIndex = getInitialPlayableIndex(tracks);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const activeTrackIndexRef = useRef(0);
+  const activeTrackIndexRef = useRef(initialPlayableIndex);
   const loadedUrlRef = useRef<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [activeTrackIndex, setActiveTrackIndex] = useState(0);
+  const [activeTrackIndex, setActiveTrackIndex] = useState(initialPlayableIndex);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [durations, setDurations] = useState<Record<number, number>>({});
   const [hoveredTrackIndex, setHoveredTrackIndex] = useState<number | null>(null);
@@ -126,7 +137,12 @@ export default function MusicAlbumPlayer({
       : `${description.slice(0, DESCRIPTION_PREVIEW_LENGTH).trim()}...`
     : "";
 
-  const metaParts = [genre, year?.toString()].filter(Boolean);
+  const metaParts = [
+    genre,
+    isPreRelease ? "PRE-RELEASE" : null,
+    year?.toString(),
+  ].filter(Boolean);
+
   const totalDurationSeconds = Object.values(durations).reduce(
     (sum, value) => sum + value,
     0
@@ -140,30 +156,44 @@ export default function MusicAlbumPlayer({
     ? `${songCountLabel}, ${formatTotalDuration(totalDurationSeconds)}`
     : songCountLabel;
 
-  const playTrack = useCallback(async (index: number) => {
-    const audio = audioRef.current;
-    const track = tracks[index];
-    if (!audio || !track?.url) return;
-
-    activeTrackIndexRef.current = index;
-    setActiveTrackIndex(index);
-
-    const needsLoad = loadedUrlRef.current !== track.url;
-    if (needsLoad) {
-      audio.pause();
-      audio.src = track.url;
-      loadedUrlRef.current = track.url;
-      audio.load();
-      await waitForAudioReady(audio);
+  const resolvePlaybackIndex = useCallback(() => {
+    if (tracks[activeTrackIndexRef.current]?.url) {
+      return activeTrackIndexRef.current;
     }
+    return playableTrackIndexes[0] ?? 0;
+  }, [playableTrackIndexes, tracks]);
 
-    if (audio.duration && Number.isFinite(audio.duration)) {
-      setDurations((prev) => ({ ...prev, [index]: audio.duration }));
-    }
+  const playTrack = useCallback(
+    async (index: number) => {
+      const audio = audioRef.current;
+      const track = tracks[index];
+      if (!audio || !track?.url) return;
 
-    await audio.play();
-    setIsPlaying(true);
-  }, [tracks]);
+      activeTrackIndexRef.current = index;
+      setActiveTrackIndex(index);
+
+      const needsLoad = loadedUrlRef.current !== track.url;
+      if (needsLoad) {
+        audio.pause();
+        audio.src = track.url;
+        loadedUrlRef.current = track.url;
+        audio.load();
+        await waitForAudioReady(audio);
+      }
+
+      if (audio.duration && Number.isFinite(audio.duration)) {
+        setDurations((prev) => ({ ...prev, [index]: audio.duration }));
+      }
+
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
+    },
+    [tracks]
+  );
 
   const pausePlayback = useCallback(() => {
     const audio = audioRef.current;
@@ -173,22 +203,27 @@ export default function MusicAlbumPlayer({
   }, []);
 
   const togglePlayback = useCallback(async () => {
+    if (!hasPlayableTracks) return;
+
     if (isPlaying) {
       pausePlayback();
       return;
     }
-    await playTrack(activeTrackIndexRef.current);
-  }, [isPlaying, pausePlayback, playTrack]);
+
+    await playTrack(resolvePlaybackIndex());
+  }, [hasPlayableTracks, isPlaying, pausePlayback, playTrack, resolvePlaybackIndex]);
 
   const toggleTrack = useCallback(
     async (index: number) => {
+      if (!tracks[index]?.url) return;
+
       if (index === activeTrackIndexRef.current && isPlaying) {
         pausePlayback();
         return;
       }
       await playTrack(index);
     },
-    [isPlaying, pausePlayback, playTrack]
+    [isPlaying, pausePlayback, playTrack, tracks]
   );
 
   const shufflePlay = useCallback(async () => {
@@ -201,7 +236,18 @@ export default function MusicAlbumPlayer({
   }, [playTrack, playableTrackIndexes]);
 
   useEffect(() => {
-    if (isAppleMusic) return;
+    return () => {
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        audio.src = "";
+        audio.load();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isAppleMusic || !hasPlayableTracks) return;
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -242,10 +288,10 @@ export default function MusicAlbumPlayer({
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
-  }, [isAppleMusic, playTrack, playableTrackIndexes, tracks]);
+  }, [hasPlayableTracks, isAppleMusic, playTrack, playableTrackIndexes, tracks]);
 
   useEffect(() => {
-    if (isAppleMusic) return;
+    if (isAppleMusic || !hasPlayableTracks) return;
     const audio = audioRef.current;
     const firstPlayableIndex = playableTrackIndexes[0];
     const firstUrl =
@@ -258,10 +304,10 @@ export default function MusicAlbumPlayer({
     activeTrackIndexRef.current = firstPlayableIndex;
     setActiveTrackIndex(firstPlayableIndex);
     audio.load();
-  }, [isAppleMusic, playableTrackIndexes, tracks]);
+  }, [hasPlayableTracks, isAppleMusic, playableTrackIndexes, tracks]);
 
   useEffect(() => {
-    if (isAppleMusic) return;
+    if (isAppleMusic || !hasPlayableTracks) return;
 
     const probes: HTMLAudioElement[] = [];
 
@@ -285,7 +331,7 @@ export default function MusicAlbumPlayer({
         probe.src = "";
       });
     };
-  }, [isAppleMusic, tracks]);
+  }, [hasPlayableTracks, isAppleMusic, tracks]);
 
   return (
     <div className="music-detail-player">
@@ -297,7 +343,12 @@ export default function MusicAlbumPlayer({
         </div>
 
         <div className="music-detail-meta-col">
-          <h1 className="music-detail-album-title">{title}</h1>
+          <div className="music-detail-title-row">
+            <h1 className="music-detail-album-title">{title}</h1>
+            {isPreRelease && (
+              <span className="music-pre-release-badge">PRE-RELEASE</span>
+            )}
+          </div>
           {metaParts.length > 0 && (
             <p className="music-detail-meta-line">{metaParts.join(" · ")}</p>
           )}
@@ -317,29 +368,29 @@ export default function MusicAlbumPlayer({
             </div>
           )}
 
-          <div className="music-detail-actions">
-            {!isAppleMusic && hasPlayableTracks && (
-              <>
+          {!isAppleMusic && (
+            <div className="music-detail-actions">
+              <button
+                type="button"
+                className="music-detail-action-btn music-detail-action-btn--primary"
+                disabled={!hasPlayableTracks}
+                onClick={() => void togglePlayback()}
+              >
+                {isPlaying ? <PauseIcon /> : <PlayIcon />}
+                {isPlaying ? "Pause" : "Play"}
+              </button>
+              {tracks.length > 1 && (
                 <button
                   type="button"
-                  className="music-detail-action-btn music-detail-action-btn--primary"
-                  onClick={() => void togglePlayback()}
+                  className="music-detail-action-btn"
+                  disabled={!hasPlayableTracks}
+                  onClick={() => void shufflePlay()}
                 >
-                  {isPlaying ? <PauseIcon /> : <PlayIcon />}
-                  {isPlaying ? "Pause" : "Play"}
+                  Shuffle
                 </button>
-                {playableTrackIndexes.length > 1 && (
-                  <button
-                    type="button"
-                    className="music-detail-action-btn"
-                    onClick={() => void shufflePlay()}
-                  >
-                    Shuffle
-                  </button>
-                )}
-              </>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -359,80 +410,77 @@ export default function MusicAlbumPlayer({
         <div className="music-detail-tracklist">
           <ol className="music-track-list music-track-list--detail">
             {tracks.map((track, index) => {
-            const isPlayable = Boolean(track.url);
-            const isActive = index === activeTrackIndex;
-            const isActivePlaying = isActive && isPlaying;
-            const isHovered = hoveredTrackIndex === index;
-            const showPause = isPlayable && isHovered && isActivePlaying;
-            const showPlay = isPlayable && isHovered && !isActivePlaying;
+              const isPlayable = Boolean(track.url);
+              const isActive = isPlayable && index === activeTrackIndex;
+              const isActivePlaying = isActive && isPlaying;
+              const isHovered = hoveredTrackIndex === index;
+              const showPause = isPlayable && isHovered && isActivePlaying;
+              const showPlay = isHovered && (!isPlayable || !isActivePlaying);
+              const duration = isPlayable ? formatDuration(durations[index]) : "";
 
-            if (!isPlayable) {
               return (
                 <li key={`${track.title}-${index}`}>
-                  <div className="music-track-row music-track-row--static">
+                  <button
+                    type="button"
+                    className={`music-track-row ${!isPlayable ? "music-track-row--static" : ""} ${isActive ? "music-track-row--active" : ""}`}
+                    onClick={() => {
+                      if (isPlayable) void toggleTrack(index);
+                    }}
+                    onMouseEnter={() => setHoveredTrackIndex(index)}
+                    onMouseLeave={() => setHoveredTrackIndex(null)}
+                    aria-label={
+                      isPlayable
+                        ? isActivePlaying
+                          ? `Pause ${track.title}`
+                          : `Play ${track.title}`
+                        : track.title
+                    }
+                  >
                     <span className="music-track-row-index">
-                      <span className="music-track-row-number">{index + 1}</span>
+                      {showPause ? (
+                        <span className="music-track-row-control">
+                          <PauseIcon />
+                        </span>
+                      ) : showPlay ? (
+                        <span className="music-track-row-control music-track-row-control--play">
+                          <PlayIcon />
+                        </span>
+                      ) : isActivePlaying ? (
+                        <span className="music-track-row-playing">
+                          <PlayingBars />
+                        </span>
+                      ) : (
+                        <span className="music-track-row-number">{index + 1}</span>
+                      )}
                     </span>
                     <span className="music-track-row-title">{track.title}</span>
-                    <span className="music-track-row-duration">--:--</span>
-                  </div>
+                    {duration && (
+                      <span className="music-track-row-duration">{duration}</span>
+                    )}
+                  </button>
                 </li>
               );
-            }
-
-            return (
-              <li key={`${track.title}-${index}`}>
-                <button
-                  type="button"
-                  className={`music-track-row ${isActive ? "music-track-row--active" : ""}`}
-                  onClick={() => void toggleTrack(index)}
-                  onMouseEnter={() => setHoveredTrackIndex(index)}
-                  onMouseLeave={() => setHoveredTrackIndex(null)}
-                  aria-label={
-                    isActivePlaying
-                      ? `Pause ${track.title}`
-                      : `Play ${track.title}`
-                  }
-                >
-                  <span className="music-track-row-index">
-                    {showPause ? (
-                      <span className="music-track-row-control">
-                        <PauseIcon />
-                      </span>
-                    ) : showPlay ? (
-                      <span className="music-track-row-control">
-                        <PlayIcon />
-                      </span>
-                    ) : isActivePlaying ? (
-                      <span className="music-track-row-playing">
-                        <PlayingBars />
-                      </span>
-                    ) : (
-                      <span className="music-track-row-number">{index + 1}</span>
-                    )}
-                  </span>
-                  <span className="music-track-row-title">{track.title}</span>
-                  <span className="music-track-row-duration">
-                    {formatDuration(durations[index])}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
+            })}
+          </ol>
         </div>
       )}
 
       <footer className="music-detail-footer">
         <div className="music-detail-footer-meta">
           {year && <p>{year}</p>}
-          <p>{isAppleMusic ? "Listen on Apple Music" : trackSummary}</p>
+          <p>
+            {isAppleMusic
+              ? "Listen on Apple Music"
+              : isPreRelease
+                ? `${trackSummary} · coming soon`
+                : trackSummary}
+          </p>
         </div>
         <p className="music-detail-footer-legal">
           all license to me or whomsoever it may concern bc i dont remember some
           of the samples where i took it from. non profit.
         </p>
-        <p className="music-detail-footer-legal">2026 copyright Abhijith</p>
+        <p className="music-detail-footer-legal">© 2026 Abhijith</p>
       </footer>
 
       {!isAppleMusic && hasPlayableTracks && (

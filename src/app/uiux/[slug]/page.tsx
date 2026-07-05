@@ -34,7 +34,7 @@ export default async function UIUXProjectPage({ params }: { params: Promise<{ sl
         <div style={{ width: "100%", maxWidth: "800px", margin: "0 auto", padding: "40px 20px" }}>
             <div style={{ marginBottom: "40px", textAlign: "center" }}>
                 <h1 className="instrument-serif" style={{ fontSize: "4rem", color: "var(--text-primary)", letterSpacing: "-0.05em", margin: "0 0 16px 0", lineHeight: 1 }}>
-                    <BlurredStagger text={project.title} />
+                    <BlurredStagger text={project.title} animateOnce />
                 </h1>
                 {project.liveLink && (
                     <a href={project.liveLink} target="_blank" rel="noopener noreferrer" style={{ color: "#FF3B30", textDecoration: "none", fontWeight: 500, fontSize: "1.2rem", display: "inline-block", marginTop: "12px" }}>

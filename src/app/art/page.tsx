@@ -116,7 +116,7 @@ export default async function ArtPage() {
     <div className="project-page-container">
       <div className="project-page-header">
         <h1 className="project-page-title">
-          <BlurredStagger text="art projects" />
+          <BlurredStagger text="art projects" animateOnce />
         </h1>
         <p className="project-page-subtitle">
           some things i have worked real hard on.

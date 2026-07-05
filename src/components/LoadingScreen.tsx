@@ -6,8 +6,8 @@ import { BlurredStagger } from "./ui/blurred-stagger-text";
 
 const STORAGE_KEY = "loading-screen-seen";
 const SLIDE_DURATION_MS = 1000;
-const HELLO_ANIMATION_MS = 1000;
-const GREETING_HOLD_MS = 350;
+const HELLO_ANIMATION_MS = 650;
+const GREETING_HOLD_MS = 200;
 
 const GREETINGS = [
   { text: "Hello.", animate: true, lang: "en" },

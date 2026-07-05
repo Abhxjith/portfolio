@@ -22,7 +22,7 @@ export default function ProjectPageTemplate({ title, subtitle, projects, childre
         <div className="project-page-container">
             {(projects.length > 0 || children) && (
                 <div className="project-page-header">
-                    <h1 className="project-page-title"><BlurredStagger text={title} /></h1>
+                    <h1 className="project-page-title"><BlurredStagger text={title} animateOnce /></h1>
                     <p className="project-page-subtitle">{subtitle}</p>
                 </div>
             )}
@@ -32,7 +32,7 @@ export default function ProjectPageTemplate({ title, subtitle, projects, childre
             {projects.length === 0 ? (
                 <div style={{ marginTop: "120px", textAlign: "center", marginBottom: "80px" }}>
                     <h2 className="instrument-serif" style={{ fontSize: "8rem", color: "var(--text-primary)", letterSpacing: "-0.05em", margin: 0, lineHeight: 1 }}>
-                        <BlurredStagger text="Coming soon." />
+                        <BlurredStagger text="Coming soon." animateOnce />
                     </h2>
                     <p style={{ color: "var(--text-secondary)", fontSize: "1.1rem", marginTop: "16px", letterSpacing: "0.05em" }}>stay tuned</p>
                 </div>
