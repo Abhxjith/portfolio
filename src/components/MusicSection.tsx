@@ -9,7 +9,6 @@ export default function MusicSection({ albums }: MusicSectionProps) {
 
   return (
     <section className="music-section" aria-label="Music">
-      <h2 className="music-section-heading">music</h2>
       <div className="music-list">
         {albums.map((album) => (
           <MusicAlbumCard key={album.id} album={album} />

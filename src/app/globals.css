@@ -271,6 +271,11 @@ nav {
   flex-direction: column;
 }
 
+.content-area:has(.gallery-intro-page) {
+  max-width: none;
+  padding: 0;
+}
+
 /* Bottom capsule navbar */
 .bottom-capsule {
   position: fixed;
@@ -321,6 +326,10 @@ nav {
   background: linear-gradient(to bottom, transparent, var(--bg-color) 80%);
   z-index: 40;
   pointer-events: none;
+}
+
+body:has(.gallery-intro-page) .bottom-vignette {
+  display: none;
 }
 
 /* Responsive adjustments */
@@ -1162,6 +1171,24 @@ nav {
   color: var(--text-secondary);
   margin: 0 0 2rem;
   text-align: center;
+}
+
+.art-card-heading {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.music-album-item > .art-card-heading {
+  margin-bottom: -0.25rem;
+}
+
+.art-gallery-stage {
+  cursor: default;
+  pointer-events: none;
 }
 
 .music-list {
@@ -2305,5 +2332,1964 @@ nav {
   .music-player-bar__track {
     padding: 0 8px;
     justify-content: center;
+  }
+}
+/* Art gallery intro */
+.gallery-detail-back {
+  top: calc(28px + env(safe-area-inset-top, 0px));
+  left: max(
+    calc(24px + env(safe-area-inset-left, 0px)),
+    calc((100vw - min(1200px, 100vw)) / 2 + clamp(1.5rem, 5vw, 4rem))
+  );
+  z-index: 60;
+}
+
+.gallery-intro-page {
+  width: 100%;
+  min-height: 100dvh;
+  background: #000;
+  color: #fff;
+  padding: 0;
+  overflow: clip;
+}
+
+.gallery-intro-page:has(.gallery-intro--entering),
+.gallery-intro-page:has(.gallery-intro--zooming),
+.gallery-intro-page:has(.gallery-intro--dissolving),
+.gallery-intro-page:has(.gallery-intro--inside) {
+  overflow: hidden;
+  height: 100dvh;
+  background: #000;
+}
+
+.gallery-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(5.5rem, 12vh, 7rem) clamp(1.5rem, 5vw, 4rem) 4rem;
+  box-sizing: border-box;
+}
+
+.gallery-intro-copy {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.35rem;
+  max-width: 34rem;
+  min-width: 0;
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 40;
+}
+
+.gallery-intro--entering .gallery-intro-copy,
+.gallery-intro--zooming .gallery-intro-copy,
+.gallery-intro--dissolving .gallery-intro-copy,
+.gallery-intro--inside .gallery-intro-copy {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.gallery-intro-title {
+  margin: 0 0 2.75rem;
+  font-family: inherit;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.gallery-intro-description {
+  margin: 0;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 28rem;
+}
+
+.gallery-intro-cta {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  border-radius: 999px;
+  background: #f06a4e;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.gallery-intro-cta:hover:not(:disabled) {
+  background: #ff7a5c;
+  transform: translateY(-1px);
+}
+
+.gallery-intro-cta:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.gallery-intro-stage {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(56vh, 480px);
+  width: 100%;
+  min-width: 0;
+  z-index: 30;
+  opacity: 1;
+  transition: opacity 0.7s ease;
+}
+
+.gallery-intro-stage--immersive {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  pointer-events: none;
+  background: transparent;
+}
+
+.gallery-cuboid-slide {
+  width: min(100%, 620px);
+  height: min(56vh, 460px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.gallery-intro-stage--immersive .gallery-cuboid-slide {
+  width: min(620px, 90vw);
+  height: min(460px, 56vh);
+}
+
+.gallery-cuboid-zoom {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.gallery-cuboid-scene {
+  width: 100%;
+  height: 100%;
+  perspective: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-cuboid {
+  --cuboid-w: 480px;
+  --cuboid-h: 185px;
+  --cuboid-d: 290px;
+  position: relative;
+  width: var(--cuboid-w);
+  height: var(--cuboid-h);
+  transform-style: preserve-3d;
+}
+
+.gallery-cuboid--spinning {
+  animation: galleryCuboidSpin 18s linear infinite;
+}
+
+.gallery-cuboid-face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  backface-visibility: hidden;
+}
+
+.gallery-cuboid-face--front,
+.gallery-cuboid-face--back {
+  width: var(--cuboid-w);
+  height: var(--cuboid-h);
+  margin: calc(var(--cuboid-h) / -2) 0 0 calc(var(--cuboid-w) / -2);
+}
+
+.gallery-cuboid-face--left,
+.gallery-cuboid-face--right {
+  width: var(--cuboid-d);
+  height: var(--cuboid-h);
+  margin: calc(var(--cuboid-h) / -2) 0 0 calc(var(--cuboid-d) / -2);
+}
+
+.gallery-cuboid-face--top,
+.gallery-cuboid-face--bottom {
+  width: var(--cuboid-w);
+  height: var(--cuboid-d);
+  margin: calc(var(--cuboid-d) / -2) 0 0 calc(var(--cuboid-w) / -2);
+}
+
+.gallery-cuboid-face--front {
+  background: linear-gradient(145deg, #c8c8c8, #a8a8a8);
+  transform: translateZ(calc(var(--cuboid-d) / 2));
+}
+
+.gallery-cuboid-face--back {
+  background: #8f8f8f;
+  transform: rotateY(180deg) translateZ(calc(var(--cuboid-d) / 2));
+}
+
+.gallery-cuboid-face--right {
+  background: #9a9a9a;
+  transform: rotateY(90deg) translateZ(calc(var(--cuboid-w) / 2));
+}
+
+.gallery-cuboid-face--left {
+  background: #a6a6a6;
+  transform: rotateY(-90deg) translateZ(calc(var(--cuboid-w) / 2));
+}
+
+.gallery-cuboid-face--top {
+  background: #d4d4d4;
+  transform: rotateX(90deg) translateZ(calc(var(--cuboid-h) / 2));
+}
+
+.gallery-cuboid-face--bottom {
+  background: #7a7a7a;
+  transform: rotateX(-90deg) translateZ(calc(var(--cuboid-h) / 2));
+}
+
+/* Open the front as we zoom through into the room */
+.gallery-cuboid--pass-through .gallery-cuboid-face--front {
+  opacity: 0;
+}
+
+.gallery-cuboid--pass-through .gallery-cuboid-face--back,
+.gallery-cuboid--pass-through .gallery-cuboid-face--left,
+.gallery-cuboid--pass-through .gallery-cuboid-face--right {
+  background: #f3efe7;
+}
+
+.gallery-cuboid--pass-through .gallery-cuboid-face--top {
+  background: #faf6f0;
+}
+
+.gallery-cuboid--pass-through .gallery-cuboid-face--bottom {
+  background: url("/gallery-wood-floor.jpg") center / 45% 45% repeat;
+}
+
+.gallery-room-portal {
+  position: fixed;
+  inset: 0;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.gallery-room-portal .gallery-room-view {
+  position: absolute;
+  inset: 0;
+  grid-column: auto;
+  grid-row: auto;
+}
+
+.gallery-enter-smoke {
+  position: fixed;
+  inset: 0;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  z-index: 28;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse 85% 70% at 50% 42%, rgba(255, 248, 235, 0.55), transparent 68%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(228, 217, 200, 0.35), rgba(228, 217, 200, 0.12) 100%);
+  /* No backdrop-filter — that was hitching the 3D scene */
+}
+
+.gallery-intro--dissolving .gallery-intro-stage,
+.gallery-intro--inside .gallery-intro-stage {
+  pointer-events: none;
+}
+
+.gallery-intro--inside .gallery-intro-stage {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.gallery-room-view {
+  /* Fine speckle used as film grain overlay */
+  --gallery-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  /* Very soft plaster mottling baked into wall/ceiling paint */
+  --gallery-noise-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  background: #e4d9c8;
+  /* Opacity driven by WAAPI during enter — avoid CSS transition fights */
+  transition: none;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+/* Belt and braces: nothing inside the room is natively draggable/selectable */
+.gallery-room-view,
+.gallery-room-view * {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.gallery-room-view--over-frame {
+  cursor: pointer !important;
+}
+
+.gallery-room-view--dragging,
+.gallery-room-view--dragging.gallery-room-view--over-frame {
+  cursor: grabbing !important;
+}
+
+.gallery-intro--inside .gallery-room-view {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 35;
+}
+
+.gallery-intro--inside .gallery-room-portal {
+  pointer-events: auto;
+  z-index: 35;
+}
+
+/* The nav pill (z-index 50) floats over the room and swallowed drags that
+   started on the railing — hide it while inside; Exit button takes over */
+body:has(.gallery-intro--inside) .bottom-capsule {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.gallery-exit {
+  position: fixed;
+  top: calc(24px + env(safe-area-inset-top, 0px));
+  right: calc(24px + env(safe-area-inset-right, 0px));
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 248, 235, 0.25);
+  border-radius: 999px;
+  background: rgba(24, 17, 9, 0.55);
+  color: rgba(255, 248, 235, 0.9);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.gallery-exit:hover {
+  background: rgba(24, 17, 9, 0.75);
+  border-color: rgba(255, 248, 235, 0.45);
+}
+
+.gallery-room-perspective {
+  position: absolute;
+  inset: 0;
+  perspective: 700px;
+  overflow: hidden;
+}
+
+.gallery-room-rig {
+  /* Kept as small as the illusion allows — face raster area is the main
+     GPU cost (at DPR 2 the old 3400px faces exceeded max texture sizes,
+     forcing constant re-tiling during drag). */
+  --room-w: min(1700px, 150vw);
+  --room-h: min(1150px, 125vh);
+  /* Depth grows with paintings per side wall (--side-count set from JS).
+     Width/height — the room's cross-section — never change. */
+  --room-d: min(
+    calc(500px + 700px * var(--side-count, 3)),
+    calc(40vw + 60vw * var(--side-count, 3))
+  );
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  /* Matches the initial look written by JS (yaw 8, pitch -8) */
+  transform: rotateX(-8deg) rotateY(8deg);
+  will-change: transform;
+}
+
+.gallery-room-face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  backface-visibility: hidden;
+  overflow: hidden;
+  pointer-events: none;
+  /* Keep each face's raster cached instead of re-rasterizing mid-drag */
+  will-change: transform;
+}
+
+.gallery-room-face--far,
+.gallery-room-face--near {
+  width: var(--room-w);
+  height: var(--room-h);
+  margin: calc(var(--room-h) / -2) 0 0 calc(var(--room-w) / -2);
+}
+
+.gallery-room-face--left,
+.gallery-room-face--right {
+  width: var(--room-d);
+  height: var(--room-h);
+  margin: calc(var(--room-h) / -2) 0 0 calc(var(--room-d) / -2);
+}
+
+/* Shared plaster wall treatment: subtle noise + vertical tonal falloff */
+.gallery-room-face--far,
+.gallery-room-face--left,
+.gallery-room-face--right {
+  background:
+    var(--gallery-noise-soft) left top / 240px 240px repeat,
+    linear-gradient(180deg, #ede3d3 0%, #e5dac9 42%, #dccfbb 78%, #cfc1aa 100%);
+}
+
+/* Empty back wall — accent orange */
+.gallery-room-face--near {
+  background:
+    var(--gallery-noise-soft) left top / 240px 240px repeat,
+    linear-gradient(
+      180deg,
+      #ff8f72 0%,
+      var(--capsule-bg) 42%,
+      #e85a3a 78%,
+      #c94a30 100%
+    );
+}
+
+/* Crown shadow line where wall meets ceiling */
+.gallery-room-face--far::before,
+.gallery-room-face--left::before,
+.gallery-room-face--right::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22px;
+  z-index: 3;
+  background: linear-gradient(180deg, #c5b7a0 0%, #d8cbb6 55%, transparent 100%);
+  box-shadow: 0 3px 8px -2px rgba(40, 28, 14, 0.28);
+}
+
+.gallery-room-face--near::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22px;
+  z-index: 3;
+  background: linear-gradient(180deg, #c94a30 0%, #e85a3a 55%, transparent 100%);
+  box-shadow: 0 3px 8px -2px rgba(80, 20, 8, 0.28);
+}
+
+/* Baseboard where wall meets floor */
+.gallery-room-face--far::after,
+.gallery-room-face--left::after,
+.gallery-room-face--right::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34px;
+  z-index: 3;
+  background: linear-gradient(180deg, #f2e9d8 0%, #e7dcc7 45%, #c3b59c 100%);
+  box-shadow:
+    0 -1px 0 rgba(60, 44, 24, 0.25),
+    0 -7px 12px -6px rgba(40, 28, 14, 0.3),
+    inset 0 -9px 10px -7px rgba(30, 20, 10, 0.4);
+}
+
+.gallery-room-face--near::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34px;
+  z-index: 3;
+  background: linear-gradient(180deg, #ff9a7e 0%, #e85a3a 45%, #b8432c 100%);
+  box-shadow:
+    0 -1px 0 rgba(90, 24, 10, 0.3),
+    0 -7px 12px -6px rgba(80, 20, 8, 0.28),
+    inset 0 -9px 10px -7px rgba(60, 16, 6, 0.35);
+}
+
+/* Floor & ceiling are laid out at half size and scaled 2x in-plane: they
+   rasterize at quarter the pixels (they're the two largest faces) and the
+   GPU upscale is invisible on these texture/gradient-only surfaces. */
+.gallery-room-face--ceiling,
+.gallery-room-face--floor {
+  width: calc(var(--room-w) / 2);
+  height: calc(var(--room-d) / 2);
+  margin: calc(var(--room-d) / -4) 0 0 calc(var(--room-w) / -4);
+}
+
+.gallery-room-face--far {
+  transform: translateZ(calc(var(--room-d) / -2));
+}
+
+.gallery-room-face--near {
+  transform: rotateY(180deg) translateZ(calc(var(--room-d) / -2));
+}
+
+.gallery-room-face--left {
+  transform: rotateY(90deg) translateZ(calc(var(--room-w) / -2));
+}
+
+.gallery-room-face--right {
+  transform: rotateY(-90deg) translateZ(calc(var(--room-w) / -2));
+}
+
+.gallery-room-face--ceiling {
+  /* Edge darkening via gradients — large blurred inset shadows are one of
+     the most expensive things to rasterize on faces this size */
+  background:
+    var(--gallery-noise-soft) left top / 240px 240px repeat,
+    linear-gradient(90deg, rgba(31, 20, 8, 0.3) 0%, transparent 9%, transparent 91%, rgba(31, 20, 8, 0.3) 100%),
+    linear-gradient(180deg, rgba(31, 20, 8, 0.32) 0%, transparent 8%, transparent 92%, rgba(31, 20, 8, 0.32) 100%),
+    radial-gradient(ellipse 70% 55% at 50% 50%, #d6cab4 0%, #c9bca4 62%, #b3a488 100%);
+  transform: rotateX(-90deg) translateZ(calc(var(--room-h) / -2)) scale(2);
+}
+
+/* 3D Track Lighting Objects */
+
+.solid-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--bx-w);
+  height: var(--bx-h);
+  margin-left: calc(var(--bx-w) * -0.5);
+  margin-top: calc(var(--bx-h) * -0.5);
+  transform-style: preserve-3d;
+}
+
+.solid-box__face {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  backface-visibility: hidden;
+  box-sizing: border-box;
+}
+
+.solid-box__face--front,
+.solid-box__face--back {
+  width: var(--bx-w);
+  height: var(--bx-h);
+  margin-left: calc(var(--bx-w) * -0.5);
+  margin-top: calc(var(--bx-h) * -0.5);
+}
+
+.solid-box__face--front {
+  transform: translateZ(calc(var(--bx-d) * 0.5));
+}
+.solid-box__face--back {
+  transform: rotateY(180deg) translateZ(calc(var(--bx-d) * 0.5));
+}
+
+.solid-box__face--left,
+.solid-box__face--right {
+  width: var(--bx-d);
+  height: var(--bx-h);
+  margin-left: calc(var(--bx-d) * -0.5);
+  margin-top: calc(var(--bx-h) * -0.5);
+}
+
+.solid-box__face--left {
+  transform: rotateY(-90deg) translateZ(calc(var(--bx-w) * 0.5));
+}
+.solid-box__face--right {
+  transform: rotateY(90deg) translateZ(calc(var(--bx-w) * 0.5));
+}
+
+.solid-box__face--top,
+.solid-box__face--bottom {
+  width: var(--bx-w);
+  height: var(--bx-d);
+  margin-left: calc(var(--bx-w) * -0.5);
+  margin-top: calc(var(--bx-d) * -0.5);
+}
+
+.solid-box__face--top {
+  transform: rotateX(90deg) translateZ(calc(var(--bx-h) * 0.5));
+}
+.solid-box__face--bottom {
+  transform: rotateX(-90deg) translateZ(calc(var(--bx-h) * 0.5));
+}
+
+.gallery-tracks {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translateY(calc(var(--room-h) * -0.5 + 14px));
+  pointer-events: none;
+}
+
+.gallery-track {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translateX(calc(var(--room-w) * var(--track-x, 0)));
+}
+
+.gallery-track__rail-face {
+  background: #080808;
+}
+
+.solid-box__face--bottom.gallery-track__rail-face {
+  background: linear-gradient(90deg, #0c0c0c 0%, #2e2e2e 45%, #141414 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.solid-box__face--left.gallery-track__rail-face,
+.solid-box__face--right.gallery-track__rail-face {
+  background: #141414;
+}
+
+.gallery-spot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform:
+    translateZ(calc(var(--room-d) * var(--spot-along, 0)))
+    rotateY(var(--spot-aim, 0deg));
+}
+
+.gallery-spot__clamp {
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  background: #111;
+  box-shadow: inset 0 0 2px #000;
+  transform: rotateX(90deg);
+}
+
+.gallery-spot__pivot {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--spot-tilt, 45deg));
+}
+
+.gallery-spot__arm {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(90deg, #1a1a1a, #333, #151515);
+  transform-origin: top center;
+}
+
+.gallery-spot__body {
+  /* Inherit position/size from .solid-box */
+  transform: translateY(16px);
+}
+
+.gallery-spot__body-face {
+  background: #181818;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.solid-box__face--top.gallery-spot__body-face,
+.solid-box__face--bottom.gallery-spot__body-face {
+  background: linear-gradient(90deg, #111 0%, #2a2a2a 40%, #0a0a0a 100%);
+}
+
+.solid-box__face--left.gallery-spot__body-face,
+.solid-box__face--right.gallery-spot__body-face {
+  background: linear-gradient(180deg, #111 0%, #2a2a2a 40%, #0a0a0a 100%);
+}
+
+.solid-box__face--front.gallery-spot__body-face {
+  background: #000;
+}
+
+.gallery-spot__lens {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 40%, #fff8e8 0%, #f0d9a0 35%, #8a7040 70%, #1a1408 100%);
+  box-shadow:
+    0 0 10px 3px rgba(255, 230, 170, 0.55),
+    0 0 22px 6px rgba(255, 210, 120, 0.25);
+  transform: translateZ(15.5px); /* just ahead of front face which is at d/2 = 15 */
+}
+
+.gallery-spot__beam {
+  position: absolute;
+  left: -36px;
+  top: 0;
+  width: 72px;
+  height: 220px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 240, 200, 0.28) 0%,
+    rgba(255, 230, 180, 0.1) 28%,
+    rgba(255, 220, 160, 0.02) 70%,
+    transparent 100%
+  );
+  /* No blur filter — filters inside preserve-3d flicker during drag.
+     Softness comes from the gradient + a feathered clip instead. */
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  opacity: 0.45;
+  pointer-events: none;
+  transform-origin: top center;
+  transform: translateY(16px) translateZ(15px) rotateX(-90deg);
+}
+
+.gallery-room-face--floor {
+  background: url("/gallery-wood-floor-1k.jpg") center / 25% 25% repeat;
+  transform: rotateX(90deg) translateZ(calc(var(--room-h) / -2)) scale(2);
+}
+
+/* Warm floor pools under the spots — one div per painting, placed from JS */
+.gallery-floor-pool {
+  position: absolute;
+  width: 16%;
+  height: 7%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(255, 233, 182, 0.32),
+    transparent 72%
+  );
+}
+
+.gallery-floor-pool--center {
+  width: 24%;
+  height: 9%;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(255, 236, 190, 0.22),
+    transparent 72%
+  );
+}
+
+/* Sheen + edge AO so the wood reads glossy instead of wallpapered */
+.gallery-room-face--floor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 42% at 50% 50%, rgba(255, 246, 224, 0.1), transparent 72%),
+    linear-gradient(90deg, rgba(12, 7, 3, 0.45) 0%, rgba(30, 18, 8, 0.14) 5%, transparent 12%, transparent 88%, rgba(30, 18, 8, 0.14) 95%, rgba(12, 7, 3, 0.45) 100%),
+    linear-gradient(180deg, rgba(12, 7, 3, 0.46) 0%, rgba(30, 18, 8, 0.14) 5%, transparent 13%, transparent 87%, rgba(30, 18, 8, 0.14) 95%, rgba(12, 7, 3, 0.46) 100%);
+}
+
+.gallery-wall-frames {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8%;
+  padding: 12% 10% 22%;
+  box-sizing: border-box;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gallery-wall-frames--far {
+  padding: 18% 20% 24%;
+}
+
+.gallery-wall-frames--side {
+  /* space-evenly puts frame i at (i+1)/(n+1) — the same fractions JS uses
+     to place wash spots, floor pools, and track lights */
+  justify-content: space-evenly;
+  gap: 0;
+  padding: 0 2% calc(var(--room-h) * 0.12);
+}
+
+.gallery-frame {
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: inherit;
+  pointer-events: auto;
+  /* No filter transitions — filters force rasterization of the 3D layer and cause flicker */
+  transition: box-shadow 0.18s ease;
+}
+
+/* Outer size = painting aspect. Frame padding sits inside via border-box. */
+.gallery-frame--wide {
+  width: calc(var(--room-w) * 0.52);
+  aspect-ratio: 16 / 10;
+}
+
+.gallery-frame--tall {
+  width: calc(var(--room-h) * 0.45);
+  aspect-ratio: 3 / 4;
+}
+
+.gallery-frame--square {
+  width: calc(var(--room-h) * 0.5);
+  aspect-ratio: 1;
+}
+
+/* —— Framed: wood moulding is the root; mat + art fill 100% —— */
+.gallery-frame--with-frame {
+  padding: 10px;
+  background: linear-gradient(145deg, #3d2a18 0%, #2a1c10 40%, #4a3420 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 26px 34px -12px rgba(20, 12, 5, 0.45),
+    0 10px 18px rgba(20, 12, 5, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.22);
+}
+
+.gallery-frame--hover.gallery-frame--with-frame {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 26px 34px -12px rgba(20, 12, 5, 0.45),
+    0 10px 18px rgba(20, 12, 5, 0.25),
+    0 0 0 2px rgba(255, 244, 214, 0.4),
+    0 0 46px 8px rgba(255, 236, 190, 0.32);
+}
+
+.gallery-frame--with-frame .gallery-frame__mat {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 8%;
+  overflow: hidden;
+  background: #ebe4d6;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.gallery-frame--with-frame .gallery-frame__surface {
+  width: 100%;
+  height: 100%;
+}
+
+.gallery-frame__surface {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, transparent 42%),
+    linear-gradient(180deg, #ddd5c6 0%, #d0c6b4 100%);
+  background-size: cover;
+  background-position: center;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Canvas tooth over the artwork */
+.gallery-frame__surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--gallery-noise-soft) left top / 90px 90px repeat;
+  opacity: 0.85;
+}
+
+/* Glazing glare — framed pieces only */
+.gallery-frame--with-frame .gallery-frame__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.06) 30%,
+    transparent 46%
+  );
+}
+
+/* —— Unframed: flat canvas + faux stretcher depth (no CSS 3D — that broke framed art) —— */
+.gallery-frame--canvas {
+  background: transparent;
+  box-shadow: none;
+}
+
+.gallery-frame--hover.gallery-frame--canvas .gallery-canvas {
+  box-shadow:
+    0 0 0 2px rgba(255, 244, 214, 0.4),
+    0 0 46px 8px rgba(255, 236, 190, 0.32),
+    10px 10px 0 0 #a89478,
+    12px 14px 22px rgba(20, 12, 5, 0.35);
+}
+
+.gallery-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  /* Faux depth: right + bottom stretcher edges */
+  box-shadow:
+    10px 10px 0 0 #a89478,
+    11px 11px 0 0 #8f7d64,
+    12px 14px 22px rgba(20, 12, 5, 0.35);
+}
+
+.gallery-canvas__edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset -10px 0 0 #9a876c,
+    inset 0 -10px 0 #8a7860;
+  z-index: 1;
+}
+
+.gallery-frame--canvas .gallery-frame__surface {
+  width: 100%;
+  height: 100%;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    inset 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.gallery-frame--canvas .gallery-frame__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 38%
+  );
+}
+
+.gallery-frame__hover-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(255, 249, 230, 0.18);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+.gallery-frame--hover .gallery-frame__hover-glow {
+  opacity: 1;
+}
+
+.gallery-frame:focus-visible {
+  outline: 2px solid rgba(255, 248, 230, 0.55);
+  outline-offset: 4px;
+}
+
+.gallery-frame__label {
+  /* Below the frame — beside it, labels were painted over by the next
+     sibling frame (later DOM order wins inside the same wall) */
+  position: absolute;
+  top: calc(100% + 30px);
+  left: 2%;
+  width: 150px;
+  padding: 12px 14px;
+  box-sizing: border-box;
+  background: #f7f2e7;
+  box-shadow:
+    0 5px 12px rgba(30, 20, 10, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+  pointer-events: none;
+}
+
+.gallery-frame__label-title {
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #2c241a;
+}
+
+.gallery-frame__label-sub {
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: #8a7c67;
+}
+
+.gallery-frame__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+/* Free-standing railing planes, set 150px in front of each wall */
+.gallery-rails {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.gallery-rail-plane {
+  --rail-h: 150px;
+  --rail-off: 150px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: var(--rail-h);
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+.gallery-rail-plane--far,
+.gallery-rail-plane--near {
+  width: calc(var(--room-w) - var(--rail-off) * 2);
+  margin: calc(var(--rail-h) / -2) 0 0 calc((var(--room-w) - var(--rail-off) * 2) / -2);
+}
+
+.gallery-rail-plane--left,
+.gallery-rail-plane--right {
+  width: calc(var(--room-d) - var(--rail-off) * 2);
+  margin: calc(var(--rail-h) / -2) 0 0 calc((var(--room-d) - var(--rail-off) * 2) / -2);
+}
+
+.gallery-rail-plane--far {
+  transform: translateZ(calc(var(--room-d) / -2 + var(--rail-off)))
+    translateY(calc(var(--room-h) / 2 - var(--rail-h) / 2));
+}
+
+.gallery-rail-plane--near {
+  transform: rotateY(180deg)
+    translateZ(calc(var(--room-d) / -2 + var(--rail-off)))
+    translateY(calc(var(--room-h) / 2 - var(--rail-h) / 2));
+}
+
+.gallery-rail-plane--left {
+  transform: rotateY(90deg)
+    translateZ(calc(var(--room-w) / -2 + var(--rail-off)))
+    translateY(calc(var(--room-h) / 2 - var(--rail-h) / 2));
+}
+
+.gallery-rail-plane--right {
+  transform: rotateY(-90deg)
+    translateZ(calc(var(--room-w) / -2 + var(--rail-off)))
+    translateY(calc(var(--room-h) / 2 - var(--rail-h) / 2));
+}
+
+.gallery-railing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gallery-railing__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22%;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #2a2a2a 0%, #111 55%, #000 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.gallery-railing__posts {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 100%;
+  padding: 0 1%;
+  box-sizing: border-box;
+}
+
+.gallery-railing__post {
+  position: relative;
+  width: 4px;
+  height: 78%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #1a1a1a, #333 40%, #111);
+  box-shadow: 1px 0 2px rgba(0, 0, 0, 0.25);
+}
+
+.gallery-railing__post::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 35% 30%, #3a3a3a, #111 70%);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.gallery-wall-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  /* Corner AO + vertical falloff shared by every wall */
+  background:
+    linear-gradient(90deg, rgba(32, 22, 11, 0.22) 0%, transparent 5%, transparent 95%, rgba(32, 22, 11, 0.22) 100%),
+    linear-gradient(180deg, rgba(38, 28, 16, 0.2) 0%, rgba(38, 28, 16, 0.06) 16%, transparent 36%, transparent 70%, rgba(22, 14, 7, 0.3) 100%);
+}
+
+/* Scalloped spotlight wash, one per painting — positioned from JS so it
+   follows the frames however many there are */
+.gallery-wash-spot {
+  position: absolute;
+  top: 0;
+  height: 62%;
+  width: calc(var(--room-h) * 0.6);
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 50% 62% at 50% 22%,
+    rgba(255, 243, 209, 0.48),
+    rgba(255, 238, 198, 0.16) 55%,
+    transparent 78%
+  );
+}
+
+/* Two overlapping scallops across the wide far-wall piece + slight depth haze */
+.gallery-room-face--far .gallery-wall-wash {
+  background:
+    radial-gradient(ellipse 18% 42% at 38% 27%, rgba(255, 243, 209, 0.42), rgba(255, 238, 198, 0.14) 55%, transparent 76%),
+    radial-gradient(ellipse 18% 42% at 62% 27%, rgba(255, 243, 209, 0.42), rgba(255, 238, 198, 0.14) 55%, transparent 76%),
+    linear-gradient(rgba(46, 34, 20, 0.06), rgba(46, 34, 20, 0.06)),
+    linear-gradient(90deg, rgba(32, 22, 11, 0.2) 0%, transparent 6%, transparent 94%, rgba(32, 22, 11, 0.2) 100%),
+    linear-gradient(180deg, rgba(38, 28, 16, 0.2) 0%, rgba(38, 28, 16, 0.06) 16%, transparent 36%, transparent 70%, rgba(22, 14, 7, 0.3) 100%);
+}
+
+/* Museum bench (CSS-3D) */
+.gallery-bench {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translateY(calc(var(--room-h) * 0.5))
+    translateZ(calc(var(--room-d) * -0.24));
+  pointer-events: none;
+}
+
+.gallery-bench__seat {
+  transform: translateY(-136px);
+}
+
+/* Wood from public/wood_table_4k.blend (diffuse map, downscaled to bench-wood.jpg) */
+.gallery-bench__seat-face {
+  background:
+    linear-gradient(180deg, rgba(20, 12, 5, 0.25) 0%, rgba(20, 12, 5, 0.5) 100%),
+    url("/bench-wood.jpg") center / 300% 600% no-repeat;
+}
+
+.solid-box__face--top.gallery-bench__seat-face {
+  background:
+    radial-gradient(ellipse 70% 60% at 42% 38%, rgba(255, 240, 210, 0.14), transparent 70%),
+    linear-gradient(rgba(30, 18, 8, 0.08), rgba(30, 18, 8, 0.18)),
+    url("/bench-wood.jpg") center / 140% 440% no-repeat;
+}
+
+.solid-box__face--left.gallery-bench__seat-face,
+.solid-box__face--right.gallery-bench__seat-face {
+  background:
+    linear-gradient(180deg, rgba(20, 12, 5, 0.3) 0%, rgba(20, 12, 5, 0.55) 100%),
+    url("/bench-wood.jpg") center / 440% 600% no-repeat;
+}
+
+.gallery-bench__leg-face {
+  background:
+    linear-gradient(180deg, rgba(12, 7, 3, 0.55) 0%, rgba(12, 7, 3, 0.75) 100%),
+    url("/bench-wood.jpg") center / 800% 260% no-repeat;
+}
+
+.gallery-bench__leg--a {
+  transform: translateX(-180px) translateY(-56px);
+}
+
+.gallery-bench__leg--b {
+  transform: translateX(180px) translateY(-56px);
+}
+
+.gallery-bench__shadow {
+  position: absolute;
+  left: -300px;
+  top: -110px;
+  width: 600px;
+  height: 220px;
+  transform: translateY(-2px) rotateX(90deg);
+  background: radial-gradient(
+    ellipse 48% 40% at 50% 50%,
+    rgba(18, 11, 4, 0.42),
+    rgba(18, 11, 4, 0.18) 55%,
+    transparent 72%
+  );
+}
+
+.gallery-room-grade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 40%, rgba(255, 216, 150, 0.07), transparent 70%),
+    radial-gradient(ellipse 75% 70% at 50% 42%, transparent 20%, rgba(20, 14, 8, 0.46) 100%),
+    linear-gradient(180deg, rgba(30, 22, 12, 0.18), transparent 35%, rgba(10, 8, 5, 0.3));
+}
+
+.gallery-room-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+  background: var(--gallery-noise) left top / 160px 160px repeat;
+  /* Plain alpha, no blend mode — mix-blend-mode over the 3D scene forces
+     per-frame compositing of the whole room and glitches during drag */
+  opacity: 0.07;
+}
+
+
+.gallery-room-view--inspecting .gallery-room-perspective {
+  /* Soft freeze — avoid filter/scale on CSS 3D (causes flicker) */
+  opacity: 0.92;
+}
+
+.gallery-inspect {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1.25rem, env(safe-area-inset-top, 0px))
+    max(1.25rem, env(safe-area-inset-right, 0px))
+    max(1.25rem, env(safe-area-inset-bottom, 0px))
+    max(1.25rem, env(safe-area-inset-left, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: auto;
+  color: #f7f1e6;
+  animation: galleryInspectIn 0.28s ease both;
+}
+
+.gallery-inspect__glass {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(28, 22, 16, 0.42);
+  background-image: linear-gradient(
+    145deg,
+    rgba(255, 252, 245, 0.22) 0%,
+    rgba(40, 32, 24, 0.45) 55%,
+    rgba(12, 10, 8, 0.55) 100%
+  );
+  backdrop-filter: blur(36px) saturate(1.25);
+  -webkit-backdrop-filter: blur(36px) saturate(1.25);
+}
+
+.gallery-inspect__content {
+  position: relative;
+  z-index: 1;
+  width: min(1100px, 100%);
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  gap: clamp(1.25rem, 4vw, 3rem);
+  align-items: center;
+}
+
+.gallery-inspect__close {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top, 1rem));
+  right: max(1rem, env(safe-area-inset-right, 1rem));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.95rem 0.6rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(20, 16, 12, 0.45);
+  color: #fff;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.gallery-inspect__close:hover {
+  background: rgba(20, 16, 12, 0.65);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.gallery-inspect__art {
+  position: relative;
+  width: 100%;
+  min-height: min(52vh, 480px);
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--capsule-bg);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.gallery-inspect__art--wide {
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+}
+
+.gallery-inspect__art--tall {
+  aspect-ratio: 3 / 4;
+  max-height: min(72vh, 680px);
+  width: min(100%, 420px);
+  min-height: min(52vh, 480px);
+  justify-self: end;
+}
+
+.gallery-inspect__art--square {
+  aspect-ratio: 1;
+  max-height: min(64vh, 560px);
+  width: min(100%, 420px);
+  min-height: min(42vh, 420px);
+  justify-self: end;
+}
+
+.gallery-inspect__meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 0.5rem 0;
+}
+
+.gallery-inspect__eyebrow {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(247, 241, 230, 0.55);
+}
+
+.gallery-inspect__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(1.5rem, 3.5vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: #fffaf0;
+}
+
+.gallery-inspect__sub {
+  margin: 0 0 1.15rem;
+  font-size: 0.95rem;
+  color: rgba(247, 241, 230, 0.72);
+}
+
+.gallery-inspect__note {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: rgba(247, 241, 230, 0.88);
+}
+
+@keyframes galleryInspectIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .gallery-inspect__content {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    max-width: 520px;
+  }
+
+  .gallery-inspect__art--tall,
+  .gallery-inspect__art--square,
+  .gallery-inspect__art--wide {
+    justify-self: center;
+    width: 100%;
+    min-height: min(36vh, 280px);
+    max-height: min(42vh, 360px);
+  }
+
+  .gallery-inspect__meta {
+    text-align: center;
+    align-items: center;
+    padding: 0 0.25rem 0.5rem;
+  }
+
+  .gallery-inspect__note {
+    max-width: 40ch;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-inspect {
+    align-items: flex-start;
+    padding-top: max(4.5rem, calc(env(safe-area-inset-top, 0px) + 3.5rem));
+  }
+
+  .gallery-inspect__art--tall,
+  .gallery-inspect__art--square,
+  .gallery-inspect__art--wide {
+    max-height: min(38vh, 280px);
+    border-radius: 14px;
+  }
+
+  .gallery-inspect__title {
+    font-size: 1.45rem;
+  }
+
+  .gallery-inspect__note {
+    font-size: 0.95rem;
+  }
+
+  .gallery-inspect__close {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-inspect {
+    animation: none;
+  }
+}
+
+.gallery-inside-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%) translateY(8px);
+  z-index: 50;
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 248, 235, 0.45);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.gallery-inside-hint--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes galleryCuboidSpin {
+  from { transform: rotateX(-18deg) rotateY(0deg); }
+  to { transform: rotateX(-18deg) rotateY(360deg); }
+}
+
+@media (max-width: 960px) {
+  .gallery-intro {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    align-content: center;
+    gap: 2.5rem;
+    min-height: 100dvh;
+    padding: calc(5.5rem + env(safe-area-inset-top, 0px))
+      clamp(1.25rem, 5vw, 2rem)
+      calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .gallery-detail-back {
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    left: calc(16px + env(safe-area-inset-left, 0px));
+  }
+
+  .gallery-intro-copy {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: none;
+    width: 100%;
+  }
+
+  .gallery-intro-title {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .gallery-intro-description {
+    max-width: none;
+    font-size: 0.95rem;
+  }
+
+  .gallery-intro-stage {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: min(36vh, 280px);
+    width: 100%;
+  }
+
+  .gallery-cuboid-slide {
+    width: 100%;
+    height: min(36vh, 280px);
+  }
+
+  .gallery-intro-stage--immersive .gallery-cuboid-slide {
+    width: min(90vw, 320px);
+    height: min(36vh, 280px);
+  }
+
+  .gallery-cuboid {
+    --cuboid-w: min(280px, 72vw);
+    --cuboid-h: min(108px, 28vw);
+    --cuboid-d: min(165px, 42vw);
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-intro {
+    gap: 2rem;
+    padding-top: calc(4.75rem + env(safe-area-inset-top, 0px));
+  }
+
+  .gallery-intro-cta {
+    width: 100%;
+    text-align: center;
+    padding: 0.95rem 1.5rem;
+  }
+
+  .gallery-cuboid {
+    --cuboid-w: min(240px, 78vw);
+    --cuboid-h: min(92px, 30vw);
+    --cuboid-d: min(140px, 46vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-cuboid--spinning {
+    animation: none;
+    transform: rotateX(-18deg) rotateY(32deg);
+  }
+
+  .gallery-intro-copy,
+  .gallery-room-view,
+  .gallery-inside-hint {
+    transition: none !important;
+  }
+
+  .gallery-intro--dissolving .gallery-room-view,
+  .gallery-intro--inside .gallery-room-view {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+}
+
+/* —— PDF books (art section) —— */
+.music-vinyl-stage.art-book-stage {
+  /* A4 portrait — match real page proportions, not the square album sleeve */
+  width: min(240px, 62vw);
+  height: calc(min(240px, 62vw) * 297 / 210);
+  aspect-ratio: 210 / 297;
+}
+
+.music-sleeve.art-book-sleeve {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: #1a1612;
+  box-shadow:
+    0 18px 36px rgba(20, 12, 5, 0.35),
+    4px 0 0 rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 720px) {
+  .music-vinyl-stage.art-book-stage {
+    width: min(200px, 58vw);
+    height: calc(min(200px, 58vw) * 297 / 210);
+  }
+
+  .music-sleeve.art-book-sleeve {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.pdf-book-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.pdf-book-cover--loading,
+.pdf-book-cover--fallback {
+  background:
+    linear-gradient(145deg, #3a3228 0%, #1e1914 55%, #2a231c 100%);
+}
+
+.pdf-book-cover--fallback {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 248, 235, 0.45);
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.pdf-book-page {
+  min-height: 100dvh;
+  height: 100dvh;
+  padding: 0;
+  background: #0c0b0a;
+  color: rgba(255, 248, 235, 0.92);
+}
+
+.pdf-book-page--immersive {
+  display: grid;
+  place-items: center;
+  overflow: visible;
+}
+
+.pdf-flipbook {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  max-height: 100dvh;
+  position: relative;
+}
+
+.pdf-flipbook--spread {
+  justify-content: stretch;
+}
+
+.pdf-flipbook__stage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  padding: 1.25rem 0.75rem 1.5rem;
+  box-sizing: border-box;
+  perspective: 2800px;
+  overflow: visible;
+}
+
+/* Physical book shell — thickness, spine edge, floor shadow */
+.pdf-book-shell {
+  position: relative;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Opening: move right immediately so the left page isn't clipped mid-flip */
+.pdf-book-shell--open {
+  transition: transform 0.12s ease-out;
+}
+
+/* Settling on cover/back after close: gentle recenter */
+.pdf-book-shell--cover,
+.pdf-book-shell--back {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pdf-book-shell__shadow {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -22px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    rgba(0, 0, 0, 0.6),
+    transparent 72%
+  );
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 0;
+  transition: left 0.45s ease, right 0.45s ease, opacity 0.3s ease;
+}
+
+/* Closed cover: tighter shadow under the single page */
+.pdf-book-shell--cover .pdf-book-shell__shadow {
+  left: 28%;
+  right: 28%;
+  opacity: 0.85;
+}
+
+.pdf-book-shell--back .pdf-book-shell__shadow {
+  left: 28%;
+  right: 28%;
+}
+
+.pdf-book-shell__block {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.58));
+}
+
+.pdf-flipbook__book {
+  margin: 0 auto !important;
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+.pdf-flip-page {
+  position: relative;
+  background: #fff;
+  overflow: hidden;
+  border: none;
+  box-shadow: none;
+}
+
+/* Page-local spine shades — they turn with the flipping page */
+.pdf-flip-page__shade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 55%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.pdf-flip-page__shade--left {
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(0, 0, 0, 0.08) 28%,
+    transparent 100%
+  );
+}
+
+.pdf-flip-page__shade--right {
+  right: 0;
+  background: linear-gradient(
+    270deg,
+    rgba(0, 0, 0, 0.22) 0%,
+    rgba(0, 0, 0, 0.08) 28%,
+    transparent 100%
+  );
+}
+
+/* Deeper gutter when open — left pages shade toward right (spine), right toward left */
+.pdf-book-shell--open .pdf-flip-page[data-page]:nth-child(even) .pdf-flip-page__shade--left {
+  width: 22%;
+  opacity: 0.45;
+}
+
+.pdf-book-shell--open .pdf-flip-page[data-page]:nth-child(even) .pdf-flip-page__shade--right {
+  width: 58%;
+  background: linear-gradient(
+    270deg,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0.22) 22%,
+    rgba(0, 0, 0, 0.08) 55%,
+    transparent 100%
+  );
+}
+
+.pdf-book-shell--open .pdf-flip-page[data-page]:nth-child(odd) .pdf-flip-page__shade--right {
+  width: 22%;
+  opacity: 0.45;
+}
+
+.pdf-book-shell--open .pdf-flip-page[data-page]:nth-child(odd) .pdf-flip-page__shade--left {
+  width: 58%;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.42) 0%,
+    rgba(0, 0, 0, 0.22) 22%,
+    rgba(0, 0, 0, 0.08) 55%,
+    transparent 100%
+  );
+}
+
+/* Soften outer edge shades on the cover so it doesn’t look boxed */
+.pdf-book-shell--cover .pdf-flip-page__shade,
+.pdf-book-shell--back .pdf-flip-page__shade {
+  opacity: 0.35;
+  width: 28%;
+}
+
+.pdf-flip-page img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  background: #fff;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pdf-flip-page__loading {
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(110deg, #f3f0ea 25%, #e8e2d8 37%, #f3f0ea 63%);
+  background-size: 200% 100%;
+  animation: pdfPageShimmer 1.1s ease-in-out infinite;
+}
+
+@keyframes pdfPageShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Floating control bar — portaled to body */
+.pdf-flipbook__bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 248, 235, 0.16);
+  background: rgba(18, 15, 12, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  pointer-events: auto;
+}
+
+.pdf-flipbook__bar button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 248, 235, 0.9);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.pdf-flipbook__bar button:hover:not(:disabled) {
+  background: rgba(255, 248, 235, 0.1);
+  border-color: rgba(255, 248, 235, 0.12);
+}
+
+.pdf-flipbook__bar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pdf-flipbook__bar-meta {
+  min-width: 3.25rem;
+  padding: 0 0.2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 248, 235, 0.48);
+  font-variant-numeric: tabular-nums;
+}
+
+.pdf-flipbook-status {
+  min-height: 40vh;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 248, 235, 0.35);
+}
+
+.pdf-flipbook-status--error a {
+  color: rgba(255, 220, 170, 0.7);
+  text-decoration: none;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 720px) {
+  .pdf-flipbook__stage {
+    padding: 3.25rem 0.35rem 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-book-shell {
+    transition: none;
+  }
+
+  .pdf-flip-page__loading {
+    animation: none;
   }
 }

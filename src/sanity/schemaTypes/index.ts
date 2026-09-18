@@ -1,5 +1,7 @@
 import { type SchemaTypeDefinition } from 'sanity'
 import { artType } from './art'
+import { artGalleryType } from './artGallery'
+import { pdfBookType } from './pdfBook'
 import { devProjectType } from './devProject'
 import { uiuxProjectType } from './uiuxProject'
 import { filmType } from './film'
@@ -14,5 +16,21 @@ import { filmRecommendationType } from './filmRecommendation'
 import { musicType } from './music'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [artType, devProjectType, uiuxProjectType, filmType, blogType, musicType, siteSettingsType, highlightType, experienceType, educationType, skillType, aboutPageType, filmRecommendationType],
+  types: [
+    artType,
+    artGalleryType,
+    pdfBookType,
+    devProjectType,
+    uiuxProjectType,
+    filmType,
+    blogType,
+    musicType,
+    siteSettingsType,
+    highlightType,
+    experienceType,
+    educationType,
+    skillType,
+    aboutPageType,
+    filmRecommendationType,
+  ],
 }

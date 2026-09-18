@@ -18,7 +18,10 @@ export default function Navigation() {
     const pathname = usePathname();
     const [stars, setStars] = useState<Star[]>([]);
     const [resumeUrl, setResumeUrl] = useState("/resume");
-    const hideOnMusicAlbum = pathname.startsWith("/art/music/");
+    const hideOnImmersiveArt =
+        pathname.startsWith("/art/music/") ||
+        pathname.startsWith("/art/gallery/") ||
+        pathname.startsWith("/art/book/");
 
     useEffect(() => {
         const fetchResume = async () => {
@@ -53,7 +56,7 @@ export default function Navigation() {
         }, 4500);
     }, []);
 
-    if (hideOnMusicAlbum) {
+    if (hideOnImmersiveArt) {
         return null;
     }
 

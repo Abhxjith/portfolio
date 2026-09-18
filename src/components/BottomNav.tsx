@@ -17,7 +17,11 @@ export default function BottomNav() {
     const pathname = usePathname();
     const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
-    if (pathname.startsWith("/art/music/")) {
+    if (
+        pathname.startsWith("/art/music/") ||
+        pathname.startsWith("/art/gallery/") ||
+        pathname.startsWith("/art/book/")
+    ) {
         return null;
     }
 

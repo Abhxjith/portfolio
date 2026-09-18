@@ -18,11 +18,13 @@
     "framer-motion": "^12.34.3",
     "lucide-react": "^1.23.0",
     "motion": "^12.34.3",
-    "next": "16.1.6",
+    "next": "^16.2.10",
     "next-sanity": "^11.6.12",
-    "postcss": "^8.5.16",
+    "pdfjs-dist": "^6.3.289",
+    "postcss": "^8.5.10",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-pageflip": "^2.0.3",
     "sanity": "^4.22.0",
     "styled-components": "^6.3.11",
     "tailwind-merge": "^3.5.0",
@@ -33,7 +35,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^16.2.10",
     "typescript": "^5"
+  },
+  "overrides": {
+    "postcss": "^8.5.10",
+    "adm-zip": "^0.6.0",
+    "uuid": "^11.1.1"
   }
 }

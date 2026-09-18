@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1a1f24"/>
+      <stop offset="0.55" stop-color="#2c353d"/>
+      <stop offset="1" stop-color="#4a3f35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(520 280) rotate(90) scale(340 280)">
+      <stop stop-color="#c4a574" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#c4a574" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <rect width="800" height="800" fill="url(#glow)"/>
+  <rect x="170" y="190" width="460" height="340" rx="4" stroke="#e8dcc8" stroke-opacity="0.35" stroke-width="2"/>
+  <rect x="210" y="230" width="380" height="260" fill="#e8dcc8" fill-opacity="0.08"/>
+  <circle cx="300" cy="320" r="42" fill="#e8dcc8" fill-opacity="0.18"/>
+  <path d="M210 430 L320 340 L390 390 L470 300 L590 430 Z" fill="#e8dcc8" fill-opacity="0.22"/>
+  <text x="400" y="620" text-anchor="middle" fill="#e8dcc8" fill-opacity="0.55" font-family="Georgia, serif" font-size="28" letter-spacing="6">GALLERY</text>
+</svg>

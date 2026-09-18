@@ -1,7 +1,7 @@
 import type {StructureResolver} from 'sanity/structure'
 
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
-const GROUPED_UNDER_ART = new Set(['art', 'music'])
+const GROUPED_UNDER_ART = new Set(['art', 'artGallery', 'music', 'pdfBook'])
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -22,6 +22,8 @@ export const structure: StructureResolver = (S) =>
             .title('Art')
             .items([
               S.documentTypeListItem('art').title('Art Projects (image / video)'),
+              S.documentTypeListItem('artGallery').title('Art Galleries (3D Rooms)'),
+              S.documentTypeListItem('pdfBook').title('PDF Books'),
               S.documentTypeListItem('music').title('Music Albums'),
             ])
         ),

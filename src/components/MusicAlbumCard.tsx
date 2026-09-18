@@ -24,6 +24,7 @@ type MusicAlbumCardProps = {
 export default function MusicAlbumCard({ album }: MusicAlbumCardProps) {
   return (
     <article className="music-album-item">
+      <p className="art-card-heading">music</p>
       <Link
         href={`/art/music/${album.slug}`}
         className="music-vinyl-stage"

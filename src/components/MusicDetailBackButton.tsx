@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-export default function MusicDetailBackButton() {
+type MusicDetailBackButtonProps = {
+  className?: string;
+};
+
+export default function MusicDetailBackButton({
+  className = "",
+}: MusicDetailBackButtonProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -14,7 +20,11 @@ export default function MusicDetailBackButton() {
   if (!mounted) return null;
 
   return createPortal(
-    <Link href="/art" className="music-detail-back" aria-label="Back to art">
+    <Link
+      href="/art"
+      className={`music-detail-back ${className}`.trim()}
+      aria-label="Back to art"
+    >
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
         <path
           d="M11 4L6 9l5 5"

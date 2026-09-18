@@ -1,22 +1,45 @@
 import ProjectPageTemplate from "@/components/ProjectPageTemplate";
 import MusicSection from "@/components/MusicSection";
+import ArtGallerySection from "@/components/ArtGallerySection";
+import ArtBookSection from "@/components/ArtBookSection";
 import { BlurredStagger } from "@/components/ui/blurred-stagger-text";
 import { client } from "../../sanity/lib/client";
 import imageUrlBuilder from "@sanity/image-url";
+import { BOOK_TYPES } from "@/lib/bookTypes";
 
 const builder = imageUrlBuilder(client);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function urlFor(source: any) {
   return builder.image(source);
 }
 
 export const dynamic = "force-dynamic";
 
+const PLACEHOLDER_COVER = "/art-placeholder.svg";
+
 type ArtProject = {
   _id: string;
   title: string;
-  description?: string;
   image?: unknown;
-  link?: string;
+};
+
+type ArtGalleryDoc = {
+  _id: string;
+  title: string;
+  slug?: string;
+  month?: string;
+  year?: number;
+  cover?: unknown;
+};
+
+type PdfBookDoc = {
+  _id: string;
+  title: string;
+  slug?: string;
+  bookType?: string;
+  year?: number;
+  pdfUrl?: string;
+  cover?: unknown;
 };
 
 type MusicDocument = {
@@ -40,10 +63,20 @@ type MusicDocument = {
 };
 
 export default async function ArtPage() {
-  const [artData, musicData] = await Promise.all([
+  const [artData, galleryData, musicData, bookData] = await Promise.all([
     client.fetch<ArtProject[]>(`*[_type == "art"]{
-        _id, title, description, image, link
+        _id, title, image
     }`),
+    client.fetch<ArtGalleryDoc[]>(
+      `*[_type == "artGallery"] | order(coalesce(order, 999999) asc, _createdAt desc){
+        _id,
+        title,
+        "slug": slug.current,
+        month,
+        year,
+        cover
+      }`
+    ),
     client.fetch<MusicDocument[]>(
       `*[_type == "music"] | order(coalesce(order, 999999) asc, _createdAt desc){
         _id,
@@ -65,15 +98,40 @@ export default async function ArtPage() {
         }
       }`
     ),
+    client.fetch<PdfBookDoc[]>(
+      `*[_type == "pdfBook"] | order(coalesce(order, 999999) asc, _createdAt desc){
+        _id,
+        title,
+        "slug": slug.current,
+        bookType,
+        year,
+        cover,
+        "pdfUrl": pdf.asset->url
+      }`
+    ),
   ]);
 
-  const artProjects = artData.map((project) => ({
-    id: project._id,
-    title: project.title,
-    description: project.description,
-    imageUrl: project.image ? urlFor(project.image).width(600).url() : undefined,
-    link: project.link,
+  const galleryCards = galleryData.map((gallery) => ({
+    id: gallery._id,
+    slug: gallery.slug,
+    title: gallery.title,
+    month: gallery.month,
+    year: gallery.year,
+    coverUrl: gallery.cover
+      ? urlFor(gallery.cover).width(800).url()
+      : PLACEHOLDER_COVER,
   }));
+
+  const artGalleries = [
+    ...galleryCards,
+    ...artData.map((project) => ({
+      id: project._id,
+      title: project.title,
+      coverUrl: project.image
+        ? urlFor(project.image).width(800).url()
+        : PLACEHOLDER_COVER,
+    })),
+  ];
 
   const musicAlbums = musicData
     .map((album) => ({
@@ -103,7 +161,22 @@ export default async function ArtPage() {
       return album.tracks.length > 0;
     });
 
-  const hasContent = artProjects.length > 0 || musicAlbums.length > 0;
+  const books = bookData
+    .map((book) => ({
+      id: book._id,
+      slug: book.slug ?? "",
+      title: book.title,
+      bookType: book.bookType ?? "other",
+      bookTypeLabel:
+        BOOK_TYPES.find((t) => t.value === book.bookType)?.title ?? "Book",
+      year: book.year,
+      pdfUrl: book.pdfUrl ?? "",
+      coverUrl: book.cover ? urlFor(book.cover).width(800).url() : undefined,
+    }))
+    .filter((book) => book.slug && book.pdfUrl);
+
+  const hasContent =
+    artGalleries.length > 0 || musicAlbums.length > 0 || books.length > 0;
 
   if (!hasContent) {
     return (
@@ -127,41 +200,8 @@ export default async function ArtPage() {
       </div>
 
       <MusicSection albums={musicAlbums} />
-
-      {artProjects.length > 0 && (
-        <section className="art-projects-section" aria-label="Art projects">
-          {musicAlbums.length > 0 && (
-            <h2 className="music-section-heading">art</h2>
-          )}
-          <div className="project-list">
-            {artProjects.map((project) => (
-              <div key={project.id} className="project-list-card">
-                <div className="project-list-image-placeholder">
-                  {project.imageUrl && (
-                    <img
-                      src={project.imageUrl}
-                      alt={project.title}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  )}
-                </div>
-                <div className="project-list-info">
-                  <h3 className="project-list-title">{project.title}</h3>
-                  {project.description && (
-                    <p className="project-list-description">
-                      {project.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <ArtBookSection books={books} />
+      <ArtGallerySection galleries={artGalleries} />
     </div>
   );
 }
