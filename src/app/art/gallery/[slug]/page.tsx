@@ -1,17 +1,12 @@
 import { notFound } from "next/navigation";
-import imageUrlBuilder from "@sanity/image-url";
 import ArtGalleryIntro from "@/components/ArtGalleryIntro";
 import MusicDetailBackButton from "@/components/MusicDetailBackButton";
 import { client } from "@/sanity/lib/client";
+import { galleryArtworkUrl } from "@/sanity/lib/image";
 import type { Artwork } from "@/components/GalleryRoomView";
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 export const dynamic = "force-dynamic";
-
-const builder = imageUrlBuilder(client);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function urlFor(source: any) {
-  return builder.image(source);
-}
 
 // Demo room shown until a real gallery exists in Sanity
 const FALLBACK_GALLERIES: Record<
@@ -36,7 +31,7 @@ type GalleryArtworkDoc = {
   note?: string;
   aspect?: "wide" | "tall" | "square";
   framed?: boolean;
-  image?: unknown;
+  image?: SanityImageSource;
 };
 
 type GalleryDoc = {
@@ -56,7 +51,7 @@ function toArtwork(doc: GalleryArtworkDoc, index: number): Artwork {
     aspect:
       doc.aspect ?? (index === 0 ? "wide" : index % 2 === 1 ? "tall" : "square"),
     framed: doc.framed !== false,
-    imageUrl: doc.image ? urlFor(doc.image).width(1200).url() : undefined,
+    imageUrl: doc.image ? galleryArtworkUrl(doc.image) : undefined,
   };
 }
 

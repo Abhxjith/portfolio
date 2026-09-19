@@ -72,8 +72,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} ${instrumentSerif.variable} ${notoMalayalam.variable} ${notoDevanagari.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.className} ${instrumentSerif.variable} ${notoMalayalam.variable} ${notoDevanagari.variable}`}
+        suppressHydrationWarning
+      >
         <LoadingScreen />
         <Navigation />
         <main className="content-area">

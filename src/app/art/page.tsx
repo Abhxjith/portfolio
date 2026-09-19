@@ -4,14 +4,13 @@ import ArtGallerySection from "@/components/ArtGallerySection";
 import ArtBookSection from "@/components/ArtBookSection";
 import { BlurredStagger } from "@/components/ui/blurred-stagger-text";
 import { client } from "../../sanity/lib/client";
-import imageUrlBuilder from "@sanity/image-url";
+import {
+  listingBookCoverUrl,
+  listingCoverUrl,
+  listingThumbUrl,
+} from "@/sanity/lib/image";
 import { BOOK_TYPES } from "@/lib/bookTypes";
-
-const builder = imageUrlBuilder(client);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function urlFor(source: any) {
-  return builder.image(source);
-}
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +19,7 @@ const PLACEHOLDER_COVER = "/art-placeholder.svg";
 type ArtProject = {
   _id: string;
   title: string;
-  image?: unknown;
+  image?: SanityImageSource;
 };
 
 type ArtGalleryDoc = {
@@ -29,7 +28,7 @@ type ArtGalleryDoc = {
   slug?: string;
   month?: string;
   year?: number;
-  cover?: unknown;
+  cover?: SanityImageSource;
 };
 
 type PdfBookDoc = {
@@ -39,7 +38,7 @@ type PdfBookDoc = {
   bookType?: string;
   year?: number;
   pdfUrl?: string;
-  cover?: unknown;
+  cover?: SanityImageSource;
 };
 
 type MusicDocument = {
@@ -51,7 +50,7 @@ type MusicDocument = {
   explicit?: boolean;
   playbackSource?: string;
   appleMusicEmbedUrl?: string;
-  artwork?: unknown;
+  artwork?: SanityImageSource;
   tracks?: Array<{
     title?: string;
     audioFile?: {
@@ -118,7 +117,7 @@ export default async function ArtPage() {
     month: gallery.month,
     year: gallery.year,
     coverUrl: gallery.cover
-      ? urlFor(gallery.cover).width(800).url()
+      ? listingCoverUrl(gallery.cover)
       : PLACEHOLDER_COVER,
   }));
 
@@ -128,7 +127,7 @@ export default async function ArtPage() {
       id: project._id,
       title: project.title,
       coverUrl: project.image
-        ? urlFor(project.image).width(800).url()
+        ? listingCoverUrl(project.image)
         : PLACEHOLDER_COVER,
     })),
   ];
@@ -143,9 +142,8 @@ export default async function ArtPage() {
       explicit: Boolean(album.explicit),
       playbackSource: album.playbackSource,
       appleMusicEmbedUrl: album.appleMusicEmbedUrl,
-      artworkUrl: album.artwork
-        ? urlFor(album.artwork).width(800).url()
-        : "",
+      artworkUrl: album.artwork ? listingCoverUrl(album.artwork) : "",
+      artworkThumbUrl: album.artwork ? listingThumbUrl(album.artwork) : "",
       tracks: (album.tracks ?? [])
         .filter((track) => track.title)
         .map((track) => ({
@@ -171,7 +169,7 @@ export default async function ArtPage() {
         BOOK_TYPES.find((t) => t.value === book.bookType)?.title ?? "Book",
       year: book.year,
       pdfUrl: book.pdfUrl ?? "",
-      coverUrl: book.cover ? urlFor(book.cover).width(800).url() : undefined,
+      coverUrl: book.cover ? listingBookCoverUrl(book.cover) : undefined,
     }))
     .filter((book) => book.slug && book.pdfUrl);
 
@@ -189,7 +187,7 @@ export default async function ArtPage() {
   }
 
   return (
-    <div className="project-page-container">
+    <div className="project-page-container art-page">
       <div className="project-page-header">
         <h1 className="project-page-title">
           <BlurredStagger text="art projects" animateOnce />
@@ -199,9 +197,14 @@ export default async function ArtPage() {
         </p>
       </div>
 
-      <MusicSection albums={musicAlbums} />
-      <ArtBookSection books={books} />
-      <ArtGallerySection galleries={artGalleries} />
+      <MusicSection albums={musicAlbums} priorityCount={1} />
+      <ArtBookSection books={books} priorityCount={musicAlbums.length === 0 ? 1 : 0} />
+      <ArtGallerySection
+        galleries={artGalleries}
+        priorityCount={
+          musicAlbums.length === 0 && books.length === 0 ? 1 : 0
+        }
+      />
     </div>
   );
 }

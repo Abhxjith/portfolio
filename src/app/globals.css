@@ -271,9 +271,15 @@ nav {
   flex-direction: column;
 }
 
-.content-area:has(.gallery-intro-page) {
+.content-area:has(.gallery-intro-page),
+.content-area:has(.pdf-book-page) {
   max-width: none;
   padding: 0;
+  overflow: hidden;
+}
+
+body:has(.pdf-book-page) {
+  overflow: hidden;
 }
 
 /* Bottom capsule navbar */
@@ -1246,6 +1252,53 @@ body:has(.gallery-intro-page) .bottom-vignette {
   display: block;
 }
 
+/* Cover image + skeleton (art / music listing) */
+.cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cover-image__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.cover-image--loaded .cover-image__img {
+  opacity: 1;
+}
+
+.cover-image__skeleton,
+.pdf-book-cover--loading.cover-image__skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(110deg, #2a2622 18%, #3a342e 37%, #2a2622 55%);
+  background-size: 220% 100%;
+  animation: coverSkeletonShimmer 1.15s ease-in-out infinite;
+}
+
+.cover-image--loaded .cover-image__skeleton {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  animation: none;
+}
+
+@keyframes coverSkeletonShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
 .music-vinyl-disc {
   position: absolute;
   top: 50%;
@@ -1766,6 +1819,37 @@ body:has(.gallery-intro-page) .bottom-vignette {
     padding-top: calc(144px + env(safe-area-inset-top, 0px));
   }
 
+  .art-page.project-page-container {
+    padding-top: 1.25rem;
+    padding-bottom: 1rem;
+  }
+
+  .art-page .project-page-header {
+    margin-bottom: 1.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .art-page .project-page-title {
+    font-size: 1.35rem;
+  }
+
+  .art-page .music-list {
+    gap: 2.75rem;
+  }
+
+  .art-page .music-section {
+    margin-bottom: 3rem;
+  }
+
+  .art-page .art-projects-section {
+    margin-top: 0.25rem;
+  }
+
+  .art-page .music-album-item {
+    gap: 1rem;
+    max-width: min(420px, 100%);
+  }
+
   .music-detail-back {
     top: calc(40px + env(safe-area-inset-top, 0px));
     left: calc((100vw - min(800px, 100vw)) / 2 + 16px + env(safe-area-inset-left, 0px));
@@ -1866,6 +1950,14 @@ body:has(.gallery-intro-page) .bottom-vignette {
   .music-vinyl-stage--detail:hover .music-vinyl-disc--out,
   .music-vinyl-stage--detail:focus-visible .music-vinyl-disc--out {
     transform: translateY(-50%) translateX(min(26vw, 104px));
+  }
+
+  /* Touch devices: peek the vinyl without hover */
+  @media (hover: none) {
+    .art-page .music-vinyl-stage:not(.art-book-stage) .music-vinyl-disc {
+      opacity: 0.92;
+      transform: translateY(-50%) translateX(min(16vw, 64px));
+    }
   }
 }
 
@@ -2588,7 +2680,7 @@ body:has(.gallery-intro-page) .bottom-vignette {
 }
 
 .gallery-cuboid--pass-through .gallery-cuboid-face--bottom {
-  background: url("/gallery-wood-floor.jpg") center / 45% 45% repeat;
+  background: url("/gallery-wood-floor-1k.jpg") center / 45% 45% repeat;
 }
 
 .gallery-room-portal {
@@ -3987,6 +4079,16 @@ body:has(.gallery-intro--inside) .bottom-capsule {
   object-position: center top;
 }
 
+/* CoverImage used as book cover fills the sleeve */
+.art-book-sleeve .cover-image.pdf-book-cover {
+  position: absolute;
+  inset: 0;
+}
+
+.art-book-sleeve .cover-image.pdf-book-cover .cover-image__img {
+  object-position: center top;
+}
+
 .pdf-book-cover--loading,
 .pdf-book-cover--fallback {
   background:
@@ -4013,7 +4115,9 @@ body:has(.gallery-intro--inside) .bottom-capsule {
 .pdf-book-page--immersive {
   display: grid;
   place-items: center;
-  overflow: visible;
+  overflow: hidden;
+  width: 100%;
+  max-width: none;
 }
 
 .pdf-flipbook {
@@ -4048,16 +4152,17 @@ body:has(.gallery-intro--inside) .bottom-capsule {
   position: relative;
   transform-origin: center center;
   will-change: transform;
+  /* No default transition — size updates must not look like a slide */
+  transition: none;
 }
 
-/* Opening: move right immediately so the left page isn't clipped mid-flip */
-.pdf-book-shell--open {
+/* Only animate when the cover actually opens / closes */
+.pdf-book-shell--layout-anim.pdf-book-shell--open {
   transition: transform 0.12s ease-out;
 }
 
-/* Settling on cover/back after close: gentle recenter */
-.pdf-book-shell--cover,
-.pdf-book-shell--back {
+.pdf-book-shell--layout-anim.pdf-book-shell--cover,
+.pdf-book-shell--layout-anim.pdf-book-shell--back {
   transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -4272,6 +4377,85 @@ body:has(.gallery-intro--inside) .bottom-capsule {
   color: rgba(255, 248, 235, 0.35);
 }
 
+.pdf-flipbook-status__skeleton {
+  width: min(42vw, 220px);
+  aspect-ratio: 210 / 297;
+  border-radius: 4px;
+  background:
+    linear-gradient(110deg, #2a2622 18%, #3a342e 37%, #2a2622 55%);
+  background-size: 220% 100%;
+  animation: coverSkeletonShimmer 1.15s ease-in-out infinite;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.pdf-book-shell--preview {
+  margin: 0 auto;
+  /* Never animate the boot preview into place */
+  transition: none !important;
+}
+
+.pdf-flipbook-boot {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+}
+
+.pdf-flipbook-boot__preview,
+.pdf-flipbook-boot__live {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pdf-flipbook-boot__preview {
+  z-index: 2;
+  pointer-events: none;
+  opacity: 1;
+  /* Snap hide — a fade made the handoff look like a slide */
+  transition: none;
+}
+
+.pdf-flipbook-boot__preview--done {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.pdf-flipbook-boot__live {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+.pdf-flipbook-boot__live--on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pdf-book-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  background: #1a1612;
+}
+
+.pdf-book-preview__cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.pdf-book-preview__skeleton {
+  width: 100%;
+  height: 100%;
+  box-shadow: none;
+}
+
 .pdf-flipbook-status--error a {
   color: rgba(255, 220, 170, 0.7);
   text-decoration: none;
@@ -4280,7 +4464,28 @@ body:has(.gallery-intro--inside) .bottom-capsule {
 
 @media (max-width: 720px) {
   .pdf-flipbook__stage {
-    padding: 3.25rem 0.35rem 1.25rem;
+    padding: 3.25rem 0.35rem 5.5rem;
+  }
+
+  .pdf-flipbook__bar {
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px));
+    gap: 0.25rem;
+    padding: 0.35rem 0.4rem;
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .pdf-flipbook__bar button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .pdf-flipbook__bar-meta {
+    min-width: 2.75rem;
+    font-size: 0.7rem;
+  }
+
+  .pdf-flipbook-status__skeleton {
+    width: min(58vw, 200px);
   }
 }
 
@@ -4289,7 +4494,14 @@ body:has(.gallery-intro--inside) .bottom-capsule {
     transition: none;
   }
 
-  .pdf-flip-page__loading {
+  .pdf-flip-page__loading,
+  .cover-image__skeleton,
+  .pdf-flipbook-status__skeleton {
     animation: none;
+  }
+
+  .cover-image__img {
+    transition: none;
+    opacity: 1;
   }
 }

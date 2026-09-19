@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CoverImage from "@/components/CoverImage";
 import MusicExplicitBadge from "@/components/MusicExplicitBadge";
 
 export type MusicAlbumPreview = {
@@ -11,6 +12,7 @@ export type MusicAlbumPreview = {
   year?: number;
   explicit?: boolean;
   artworkUrl: string;
+  artworkThumbUrl?: string;
 };
 
 function formatAlbumMeta(genre?: string, year?: number) {
@@ -19,9 +21,15 @@ function formatAlbumMeta(genre?: string, year?: number) {
 
 type MusicAlbumCardProps = {
   album: MusicAlbumPreview;
+  priority?: boolean;
 };
 
-export default function MusicAlbumCard({ album }: MusicAlbumCardProps) {
+export default function MusicAlbumCard({
+  album,
+  priority = false,
+}: MusicAlbumCardProps) {
+  const labelUrl = album.artworkThumbUrl || album.artworkUrl;
+
   return (
     <article className="music-album-item">
       <p className="art-card-heading">music</p>
@@ -34,13 +42,17 @@ export default function MusicAlbumCard({ album }: MusicAlbumCardProps) {
           <div className="music-vinyl-disc-inner">
             <div
               className="music-vinyl-label"
-              style={{ backgroundImage: `url(${album.artworkUrl})` }}
+              style={{ backgroundImage: `url(${labelUrl})` }}
             />
           </div>
         </div>
 
         <div className="music-sleeve">
-          <img src={album.artworkUrl} alt={`${album.title} artwork`} />
+          <CoverImage
+            src={album.artworkUrl}
+            alt={`${album.title} artwork`}
+            priority={priority}
+          />
         </div>
       </Link>
 

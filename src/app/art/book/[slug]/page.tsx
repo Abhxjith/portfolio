@@ -2,12 +2,15 @@ import { notFound } from "next/navigation";
 import MusicDetailBackButton from "@/components/MusicDetailBackButton";
 import PdfFlipbookClient from "@/components/PdfFlipbookClient";
 import { client } from "@/sanity/lib/client";
+import { flipbookCoverUrl } from "@/sanity/lib/image";
+import type { SanityImageSource } from "@sanity/image-url/lib/types/types";
 
 export const dynamic = "force-dynamic";
 
 type BookDoc = {
   title?: string;
   pdfUrl?: string;
+  cover?: SanityImageSource;
 };
 
 export default async function ArtBookPage({
@@ -20,6 +23,7 @@ export default async function ArtBookPage({
   const book = await client.fetch<BookDoc | null>(
     `*[_type == "pdfBook" && slug.current == $slug][0]{
       title,
+      cover,
       "pdfUrl": pdf.asset->url
     }`,
     { slug },
@@ -29,10 +33,19 @@ export default async function ArtBookPage({
     notFound();
   }
 
+  const coverUrl = book.cover ? flipbookCoverUrl(book.cover) : undefined;
+
   return (
-    <div className="pdf-book-page pdf-book-page--immersive">
-      <MusicDetailBackButton className="pdf-book-back" />
-      <PdfFlipbookClient pdfUrl={book.pdfUrl} title={book.title} />
-    </div>
+    <>
+      {coverUrl ? <link rel="preload" as="image" href={coverUrl} /> : null}
+      <div className="pdf-book-page pdf-book-page--immersive">
+        <MusicDetailBackButton className="pdf-book-back" />
+        <PdfFlipbookClient
+          pdfUrl={book.pdfUrl}
+          title={book.title}
+          coverUrl={coverUrl}
+        />
+      </div>
+    </>
   );
 }

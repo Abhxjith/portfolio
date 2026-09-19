@@ -74,19 +74,17 @@ function ExperienceItem({ company, role, date, location, description, logo, link
     );
 }
 
-export default function ExperienceSection() {
+export default function ExperienceSection({
+    experiences: initialExperiences = [],
+}: {
+    experiences?: Experience[];
+}) {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const [experiences, setExperiences] = useState<Experience[]>([]);
+    const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
 
     useEffect(() => {
-        const fetchExperiences = async () => {
-            const data = await client.fetch(`*[_type == "experience"] | order(order asc){
-                _id, company, role, date, location, description, logo, link
-            }`);
-            setExperiences(data);
-        };
-        fetchExperiences();
-    }, []);
+        setExperiences(initialExperiences);
+    }, [initialExperiences]);
 
     if (experiences.length === 0) return null;
 

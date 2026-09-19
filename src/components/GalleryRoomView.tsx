@@ -129,6 +129,15 @@ function artBackground(artwork: Artwork): string {
   return ART_BG[artwork.id] ?? ART_FALLBACK_BG;
 }
 
+function preloadArtworkImages(items: Artwork[]) {
+  for (const artwork of items) {
+    if (!artwork.imageUrl) continue;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = artwork.imageUrl;
+  }
+}
+
 export default function GalleryRoomView({
   active,
   artworks,
@@ -148,6 +157,10 @@ export default function GalleryRoomView({
     () => list.filter((_, i) => i > 0 && i % 2 === 1),
     [list]
   );
+
+  useEffect(() => {
+    preloadArtworkImages(list);
+  }, [list]);
   const rightArts = useMemo(
     () => list.filter((_, i) => i > 0 && i % 2 === 0),
     [list]

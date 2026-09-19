@@ -57,19 +57,16 @@ function EducationItem({ institution, degree, date, cgpa, logo, link }: any) {
     );
 }
 
-export default function EducationSection() {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
-    const [education, setEducation] = useState<Education[]>([]);
+export default function EducationSection({
+    education: initialEducation = [],
+}: {
+    education?: Education[];
+}) {
+    const [education, setEducation] = useState<Education[]>(initialEducation);
 
     useEffect(() => {
-        const fetchEducation = async () => {
-            const data = await client.fetch(`*[_type == "education"] | order(order asc){
-                _id, institution, degree, date, cgpa, logo, link
-            }`);
-            setEducation(data);
-        };
-        fetchEducation();
-    }, []);
+        setEducation(initialEducation);
+    }, [initialEducation]);
 
     if (education.length === 0) return null;
 

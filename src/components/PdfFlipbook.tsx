@@ -11,10 +11,21 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import HTMLFlipBook from "react-pageflip";
+import {
+  getCachedPages,
+  getPdfDocument,
+  measureBookPageSize,
+  renderPdfPage,
+  renderScaleForViewport,
+  setCachedPage,
+} from "@/lib/pdfBookLoader";
 
 type PdfFlipbookProps = {
   pdfUrl: string;
   title: string;
+  coverUrl?: string;
+  initialSize: { w: number; h: number };
+  onInteractive?: () => void;
 };
 
 type FlipBookHandle = {
@@ -42,104 +53,95 @@ const Page = forwardRef<
       data-density={density}
     >
       {children}
-      {/* Spine shading lives ON the page so it flips with it */}
       <span className="pdf-flip-page__shade pdf-flip-page__shade--left" aria-hidden />
       <span className="pdf-flip-page__shade pdf-flip-page__shade--right" aria-hidden />
     </div>
   );
 });
 
-async function renderPage(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  page: any,
-  scale: number,
-): Promise<string> {
-  const viewport = page.getViewport({ scale });
-  const canvas = document.createElement("canvas");
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-  return canvas.toDataURL("image/jpeg", 0.9);
-}
-
-export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
+export default function PdfFlipbook({
+  pdfUrl,
+  coverUrl,
+  initialSize,
+  onInteractive,
+}: PdfFlipbookProps) {
   const bookRef = useRef<FlipBookHandle | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const [pages, setPages] = useState<string[]>([]);
-  const [pageCount, setPageCount] = useState(0);
+  const onInteractiveRef = useRef(onInteractive);
+  onInteractiveRef.current = onInteractive;
+
+  const [pages, setPages] = useState<string[]>(() => getCachedPages(pdfUrl) ?? []);
+  const [pageCount, setPageCount] = useState(() => getCachedPages(pdfUrl)?.length ?? 0);
   const [error, setError] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(() => Boolean(getCachedPages(pdfUrl)?.[0]));
   const [pageIndex, setPageIndex] = useState(0);
-  const [zoom, setZoom] = useState(1.08);
-  const [size, setSize] = useState({ w: 340, h: 480 });
+  const [zoom, setZoom] = useState(1);
+  // Locked to the same size as the boot preview — avoids a big→small flash
+  const [size, setSize] = useState(initialSize);
   const [mounted, setMounted] = useState(false);
-  /** Layout mode for centering — updates at flip START so pages aren't clipped */
   const [layout, setLayout] = useState<"cover" | "open" | "back">("cover");
+  const [layoutAnim, setLayoutAnim] = useState(false);
   const pageIndexRef = useRef(0);
+  const sizeWRef = useRef(initialSize.w);
+  sizeWRef.current = size.w;
+  const revealedRef = useRef(false);
+  const [revealed, setRevealed] = useState(false);
+
+  const goLayout = useCallback((next: "cover" | "open" | "back") => {
+    setLayoutAnim(true);
+    setLayout(next);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
+    window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    setSize(initialSize);
+    sizeWRef.current = initialSize.w;
+  }, [initialSize.w, initialSize.h]);
 
   useEffect(() => {
     pageIndexRef.current = pageIndex;
   }, [pageIndex]);
 
+  // Resize only — do not remeasure on ready (that caused the oversized flash)
   useEffect(() => {
-    if (!ready || pageCount === 0) return;
-
-    const measure = () => {
-      const stage = stageRef.current;
-      const vw = stage?.clientWidth || window.innerWidth;
-      const vh = (stage?.clientHeight || window.innerHeight) - 72;
-      const maxSpreadW = Math.min(vw * 0.94, 1280);
-      const maxH = Math.min(vh * 0.9, 860);
-      let pageW = maxSpreadW / 2;
-      let pageH = pageW * (297 / 210);
-      if (pageH > maxH) {
-        pageH = maxH;
-        pageW = pageH * (210 / 297);
-      }
-      setSize({ w: Math.round(pageW), h: Math.round(pageH) });
+    const onResize = () => {
+      const next = measureBookPageSize(stageRef.current?.clientWidth);
+      sizeWRef.current = next.w;
+      setSize(next);
     };
-
-    measure();
-    const raf = requestAnimationFrame(measure);
-    window.addEventListener("resize", measure);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", measure);
-    };
-  }, [ready, pageCount]);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    setReady(false);
+    revealedRef.current = false;
+    setRevealed(false);
+    const cached = getCachedPages(pdfUrl);
+    if (cached?.[0]) {
+      setPages([...cached]);
+      setPageCount(cached.length);
+      setReady(true);
+    } else {
+      setReady(false);
+      setPages([]);
+      setPageCount(0);
+    }
     setError(null);
-    setPages([]);
-    setPageCount(0);
     setPageIndex(0);
+    setLayoutAnim(false);
     setLayout("cover");
     pageIndexRef.current = 0;
 
     (async () => {
       try {
-        const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-          "pdfjs-dist/build/pdf.worker.min.mjs",
-          import.meta.url,
-        ).toString();
-
-        const doc = await pdfjs.getDocument({
-          url: pdfUrl,
-          withCredentials: false,
-        }).promise;
-
+        const doc = await getPdfDocument(pdfUrl);
         if (cancelled) return;
+
         const total = doc.numPages;
         if (total < 1) {
           setError("empty");
@@ -147,23 +149,48 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
         }
 
         setPageCount(total);
-        const slots = Array.from({ length: total }, () => "");
-        setPages(slots);
+        const cachedPages = getCachedPages(pdfUrl);
+        const slots =
+          cachedPages?.length === total
+            ? [...cachedPages]
+            : Array.from({ length: total }, () => "");
 
-        const first = await doc.getPage(1);
-        const cover = await renderPage(first, 1.55);
-        if (cancelled) return;
-        slots[0] = cover;
-        setPages([...slots]);
-        setReady(true);
-
-        for (let i = 2; i <= total; i++) {
-          if (cancelled) return;
-          const page = await doc.getPage(i);
-          const url = await renderPage(page, 1.45);
-          if (cancelled) return;
-          slots[i - 1] = url;
+        if (!slots[0] && coverUrl) {
+          slots[0] = coverUrl;
           setPages([...slots]);
+          setReady(true);
+        } else if (slots[0]) {
+          setPages([...slots]);
+          setReady(true);
+        } else {
+          setPages([...slots]);
+        }
+
+        const scale = renderScaleForViewport(sizeWRef.current || 480);
+
+        const order = [
+          1,
+          ...Array.from({ length: Math.min(3, total) }, (_, i) => i + 2).filter(
+            (n) => n <= total,
+          ),
+          ...Array.from({ length: total }, (_, i) => i + 1).filter((n) => n > 4),
+        ];
+        const seen = new Set<number>();
+
+        for (const n of order) {
+          if (cancelled || seen.has(n)) continue;
+          seen.add(n);
+          const idx = n - 1;
+          const existing = slots[idx];
+          if (existing && existing.startsWith("data:")) continue;
+
+          const page = await doc.getPage(n);
+          const url = await renderPdfPage(page, scale);
+          if (cancelled || !url) return;
+          slots[idx] = url;
+          setCachedPage(pdfUrl, idx, url, total);
+          setPages([...slots]);
+          if (idx === 0) setReady(true);
         }
       } catch {
         if (!cancelled) setError("load");
@@ -173,7 +200,31 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
     return () => {
       cancelled = true;
     };
-  }, [pdfUrl]);
+  }, [pdfUrl, coverUrl]);
+
+  // Reveal only after the closed-cover layout has painted at the correct size
+  useEffect(() => {
+    if (error) {
+      setRevealed(true);
+      onInteractiveRef.current?.();
+      return;
+    }
+    if (!ready || pageCount === 0 || revealedRef.current) return;
+
+    let cancelled = false;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (cancelled || revealedRef.current) return;
+        revealedRef.current = true;
+        setRevealed(true);
+        onInteractiveRef.current?.();
+      });
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(id);
+    };
+  }, [ready, pageCount, error]);
 
   const flipNext = useCallback(() => {
     bookRef.current?.pageFlip()?.flipNext();
@@ -207,45 +258,31 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
     [pdfUrl, size.w, size.h, pageCount],
   );
 
-  // StPageFlip keeps the closed cover on the RIGHT half of a 2-page block.
-  // Shift so the cover sits centered; when open, center the full spread.
-  // `layout` is set at flip START (not end) so the left page isn't clipped
-  // while the book is still in the cover-centered position.
   const coverShiftX =
     layout === "cover" ? -size.w / 2 : layout === "back" ? size.w / 2 : 0;
 
   const syncLayoutFromIndex = useCallback(
     (idx: number) => {
-      if (idx <= 0) setLayout("cover");
-      else if (pageCount > 1 && idx >= pageCount - 1) setLayout("back");
-      else setLayout("open");
+      if (idx <= 0) goLayout("cover");
+      else if (pageCount > 1 && idx >= pageCount - 1) goLayout("back");
+      else goLayout("open");
     },
-    [pageCount],
+    [pageCount, goLayout],
   );
 
   const onFlipState = useCallback(
     (e: { data: string }) => {
-      const state = e.data;
-      if (
-        state !== "flipping" &&
-        state !== "user_fold" &&
-        state !== "fold_corner"
-      ) {
-        return;
-      }
+      if (e.data !== "flipping") return;
       const idx = pageIndexRef.current;
-      // Opening from front cover → make room for the left page immediately
       if (idx === 0) {
-        setLayout("open");
+        goLayout("open");
         return;
       }
-      // Closing onto back cover → stay open until flip finishes (handled in onFlip)
-      // Opening from back cover toward spread
       if (pageCount > 1 && idx >= pageCount - 1) {
-        setLayout("open");
+        goLayout("open");
       }
     },
-    [pageCount],
+    [pageCount, goLayout],
   );
 
   const onFlipComplete = useCallback(
@@ -268,12 +305,21 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
     );
   }
 
-  if (!ready || pages.length === 0) {
-    return <div className="pdf-flipbook-status" role="status" aria-label="Loading" />;
+  // Stay invisible under the boot preview until pages are ready
+  if (!ready || pageCount === 0) {
+    return (
+      <div
+        className="pdf-flipbook pdf-flipbook--spread"
+        ref={stageRef}
+        aria-hidden
+        style={{ visibility: "hidden" }}
+      />
+    );
   }
 
   const toolbar =
     mounted &&
+    revealed &&
     createPortal(
       <div className="pdf-flipbook__bar" role="toolbar" aria-label="Book controls">
         <button type="button" onClick={flipPrev} aria-label="Previous page">
@@ -311,14 +357,19 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
         <div
           className={[
             "pdf-book-shell",
+            layoutAnim ? "pdf-book-shell--layout-anim" : "",
             layout === "cover"
               ? "pdf-book-shell--cover"
               : layout === "back"
                 ? "pdf-book-shell--back"
                 : "pdf-book-shell--open",
-          ].join(" ")}
+          ]
+            .filter(Boolean)
+            .join(" ")}
           style={{
             transform: `translateX(${coverShiftX}px) scale(${zoom})`,
+            // Only animate when the user actually flips — never on first paint
+            transition: layoutAnim ? undefined : "none",
           }}
         >
           <div className="pdf-book-shell__shadow" aria-hidden />
@@ -330,9 +381,9 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
               height={size.h}
               size="fixed"
               minWidth={180}
-              maxWidth={560}
+              maxWidth={720}
               minHeight={260}
-              maxHeight={850}
+              maxHeight={900}
               showCover
               mobileScrollSupport
               drawShadow
@@ -358,6 +409,7 @@ export default function PdfFlipbook({ pdfUrl }: PdfFlipbookProps) {
                 return (
                   <Page key={i} number={i + 1} density={density}>
                     {src ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={src} alt="" draggable={false} />
                     ) : (
                       <div className="pdf-flip-page__loading" aria-hidden />

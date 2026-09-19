@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CoverImage from "@/components/CoverImage";
 
 export type ArtGalleryPreview = {
   id: string;
@@ -17,10 +18,24 @@ function formatGalleryMeta(month?: string, year?: number) {
 
 type ArtGalleryCardProps = {
   gallery: ArtGalleryPreview;
+  priority?: boolean;
 };
 
-export default function ArtGalleryCard({ gallery }: ArtGalleryCardProps) {
+export default function ArtGalleryCard({
+  gallery,
+  priority = false,
+}: ArtGalleryCardProps) {
   const href = gallery.slug ? `/art/gallery/${gallery.slug}` : undefined;
+
+  const sleeve = (
+    <div className="music-sleeve">
+      <CoverImage
+        src={gallery.coverUrl}
+        alt={href ? `${gallery.title} cover` : ""}
+        priority={priority}
+      />
+    </div>
+  );
 
   return (
     <article className="music-album-item">
@@ -31,15 +46,11 @@ export default function ArtGalleryCard({ gallery }: ArtGalleryCardProps) {
           className="music-vinyl-stage"
           aria-label={`Open ${gallery.title}`}
         >
-          <div className="music-sleeve">
-            <img src={gallery.coverUrl} alt={`${gallery.title} cover`} />
-          </div>
+          {sleeve}
         </Link>
       ) : (
         <div className="music-vinyl-stage art-gallery-stage" aria-hidden>
-          <div className="music-sleeve">
-            <img src={gallery.coverUrl} alt="" />
-          </div>
+          {sleeve}
         </div>
       )}
 
