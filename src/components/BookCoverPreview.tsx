@@ -4,43 +4,57 @@ type BookCoverPreviewProps = {
   coverUrl?: string;
   width?: number;
   height?: number;
+  /** Mobile single-page mode — no fake 2-page shell */
+  portrait?: boolean;
 };
 
 /**
- * Mirrors the closed flipbook geometry: a 2-page-wide shell with the cover on
- * the right half, shifted by -w/2 so the cover sits centered — same as
- * PdfFlipbook’s cover layout. Transform is applied from the first paint
- * (never animated), so it doesn’t slide in from the side.
+ * Boot cover preview.
+ * Desktop: mirrors closed StPageFlip (2-page shell, cover on right, shifted).
+ * Mobile: one centered page (matches usePortrait flipbook).
  */
 export default function BookCoverPreview({
   coverUrl,
   width,
   height,
+  portrait = false,
 }: BookCoverPreviewProps) {
+  const cover = coverUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={coverUrl}
+      alt=""
+      className="pdf-book-preview__cover"
+      draggable={false}
+      fetchPriority="high"
+    />
+  ) : (
+    <div
+      className="pdf-flipbook-status__skeleton pdf-book-preview__skeleton"
+      aria-hidden
+    />
+  );
+
   if (!width || !height) {
     return (
       <div
         className="pdf-book-shell pdf-book-shell--cover pdf-book-shell--preview"
-        style={{ width: "min(46vw, 420px)", aspectRatio: "210 / 297" }}
+        style={{ width: "min(72vw, 320px)", aspectRatio: "210 / 297" }}
       >
         <div className="pdf-book-shell__shadow" aria-hidden />
-        <div className="pdf-book-shell__block pdf-book-preview">
-          {coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverUrl}
-              alt=""
-              className="pdf-book-preview__cover"
-              draggable={false}
-              fetchPriority="high"
-            />
-          ) : (
-            <div
-              className="pdf-flipbook-status__skeleton pdf-book-preview__skeleton"
-              aria-hidden
-            />
-          )}
-        </div>
+        <div className="pdf-book-shell__block pdf-book-preview">{cover}</div>
+      </div>
+    );
+  }
+
+  if (portrait) {
+    return (
+      <div
+        className="pdf-book-shell pdf-book-shell--cover pdf-book-shell--preview"
+        style={{ width, height, transition: "none" }}
+      >
+        <div className="pdf-book-shell__shadow" aria-hidden />
+        <div className="pdf-book-shell__block pdf-book-preview">{cover}</div>
       </div>
     );
   }
@@ -60,21 +74,7 @@ export default function BookCoverPreview({
         className="pdf-book-shell__block pdf-book-preview"
         style={{ width, height, marginLeft: width }}
       >
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverUrl}
-            alt=""
-            className="pdf-book-preview__cover"
-            draggable={false}
-            fetchPriority="high"
-          />
-        ) : (
-          <div
-            className="pdf-flipbook-status__skeleton pdf-book-preview__skeleton"
-            aria-hidden
-          />
-        )}
+        {cover}
       </div>
     </div>
   );

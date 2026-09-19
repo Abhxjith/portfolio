@@ -18,13 +18,14 @@ import {
   renderPdfPage,
   renderScaleForViewport,
   setCachedPage,
+  type BookPageSize,
 } from "@/lib/pdfBookLoader";
 
 type PdfFlipbookProps = {
   pdfUrl: string;
   title: string;
   coverUrl?: string;
-  initialSize: { w: number; h: number };
+  initialSize: BookPageSize;
   onInteractive?: () => void;
 };
 
@@ -40,6 +41,12 @@ type FlipBookHandle = {
 const ZOOM_MIN = 0.7;
 const ZOOM_MAX = 1.45;
 const ZOOM_STEP = 0.15;
+
+function canOpenBook(pages: string[] | undefined) {
+  if (!pages?.[0]) return false;
+  if (pages.length < 2) return true;
+  return Boolean(pages[1]);
+}
 
 const Page = forwardRef<
   HTMLDivElement,
@@ -73,17 +80,18 @@ export default function PdfFlipbook({
   const [pages, setPages] = useState<string[]>(() => getCachedPages(pdfUrl) ?? []);
   const [pageCount, setPageCount] = useState(() => getCachedPages(pdfUrl)?.length ?? 0);
   const [error, setError] = useState<string | null>(null);
-  const [ready, setReady] = useState(() => Boolean(getCachedPages(pdfUrl)?.[0]));
+  const [ready, setReady] = useState(() => canOpenBook(getCachedPages(pdfUrl)));
   const [pageIndex, setPageIndex] = useState(0);
   const [zoom, setZoom] = useState(1);
   // Locked to the same size as the boot preview — avoids a big→small flash
-  const [size, setSize] = useState(initialSize);
+  const [size, setSize] = useState<BookPageSize>(initialSize);
   const [mounted, setMounted] = useState(false);
   const [layout, setLayout] = useState<"cover" | "open" | "back">("cover");
   const [layoutAnim, setLayoutAnim] = useState(false);
   const pageIndexRef = useRef(0);
   const sizeWRef = useRef(initialSize.w);
   sizeWRef.current = size.w;
+  const portrait = size.portrait;
   const revealedRef = useRef(false);
   const [revealed, setRevealed] = useState(false);
 
@@ -100,7 +108,7 @@ export default function PdfFlipbook({
   useEffect(() => {
     setSize(initialSize);
     sizeWRef.current = initialSize.w;
-  }, [initialSize.w, initialSize.h]);
+  }, [initialSize.w, initialSize.h, initialSize.portrait]);
 
   useEffect(() => {
     pageIndexRef.current = pageIndex;
@@ -122,10 +130,14 @@ export default function PdfFlipbook({
     revealedRef.current = false;
     setRevealed(false);
     const cached = getCachedPages(pdfUrl);
-    if (cached?.[0]) {
+    if (canOpenBook(cached)) {
+      setPages([...(cached as string[])]);
+      setPageCount(cached!.length);
+      setReady(true);
+    } else if (cached?.[0]) {
       setPages([...cached]);
       setPageCount(cached.length);
-      setReady(true);
+      setReady(false);
     } else {
       setReady(false);
       setPages([]);
@@ -158,8 +170,8 @@ export default function PdfFlipbook({
         if (!slots[0] && coverUrl) {
           slots[0] = coverUrl;
           setPages([...slots]);
-          setReady(true);
-        } else if (slots[0]) {
+          // Don't mark ready yet — wait until page 2 exists so the cover can open onto something
+        } else if (canOpenBook(slots)) {
           setPages([...slots]);
           setReady(true);
         } else {
@@ -168,13 +180,14 @@ export default function PdfFlipbook({
 
         const scale = renderScaleForViewport(sizeWRef.current || 480);
 
+        // Cover first, then the page under it so opening isn't onto a blank slot
         const order = [
           1,
-          ...Array.from({ length: Math.min(3, total) }, (_, i) => i + 2).filter(
-            (n) => n <= total,
-          ),
+          2,
+          3,
+          4,
           ...Array.from({ length: total }, (_, i) => i + 1).filter((n) => n > 4),
-        ];
+        ].filter((n) => n <= total);
         const seen = new Set<number>();
 
         for (const n of order) {
@@ -190,7 +203,7 @@ export default function PdfFlipbook({
           slots[idx] = url;
           setCachedPage(pdfUrl, idx, url, total);
           setPages([...slots]);
-          if (idx === 0) setReady(true);
+          if (canOpenBook(slots)) setReady(true);
         }
       } catch {
         if (!cancelled) setError("load");
@@ -254,25 +267,43 @@ export default function PdfFlipbook({
   }, [flipNext, flipPrev, zoomIn, zoomOut]);
 
   const bookKey = useMemo(
-    () => `${pdfUrl}-${size.w}x${size.h}-${pageCount}`,
-    [pdfUrl, size.w, size.h, pageCount],
+    () => `${pdfUrl}-${size.w}x${size.h}-${pageCount}-${portrait ? "p" : "s"}`,
+    [pdfUrl, size.w, size.h, pageCount, portrait],
   );
 
-  const coverShiftX =
-    layout === "cover" ? -size.w / 2 : layout === "back" ? size.w / 2 : 0;
+  // Desktop spread: shift so closed cover is centered. Mobile portrait: no shift.
+  const coverShiftX = portrait
+    ? 0
+    : layout === "cover"
+      ? -size.w / 2
+      : layout === "back"
+        ? size.w / 2
+        : 0;
 
   const syncLayoutFromIndex = useCallback(
     (idx: number) => {
+      if (portrait) {
+        setLayoutAnim(false);
+        if (idx <= 0) setLayout("cover");
+        else if (pageCount > 1 && idx >= pageCount - 1) setLayout("back");
+        else setLayout("open");
+        return;
+      }
       if (idx <= 0) goLayout("cover");
       else if (pageCount > 1 && idx >= pageCount - 1) goLayout("back");
       else goLayout("open");
     },
-    [pageCount, goLayout],
+    [pageCount, goLayout, portrait],
   );
 
   const onFlipState = useCallback(
     (e: { data: string }) => {
-      if (e.data !== "flipping") return;
+      if (portrait) return;
+      const state = e.data;
+      // Shift early so the left page isn't clipped while the cover turns.
+      // `user_fold` = drag started; `flipping` = committed turn.
+      // Skip `fold_corner` — that peeks without opening and felt like a false slide.
+      if (state !== "flipping" && state !== "user_fold") return;
       const idx = pageIndexRef.current;
       if (idx === 0) {
         goLayout("open");
@@ -282,7 +313,7 @@ export default function PdfFlipbook({
         goLayout("open");
       }
     },
-    [pageCount, goLayout],
+    [pageCount, goLayout, portrait],
   );
 
   const onFlipComplete = useCallback(
@@ -352,7 +383,7 @@ export default function PdfFlipbook({
     );
 
   return (
-    <div className="pdf-flipbook pdf-flipbook--spread">
+    <div className={`pdf-flipbook pdf-flipbook--spread${portrait ? " pdf-flipbook--portrait" : ""}`}>
       <div className="pdf-flipbook__stage" ref={stageRef}>
         <div
           className={[
@@ -367,37 +398,44 @@ export default function PdfFlipbook({
             .filter(Boolean)
             .join(" ")}
           style={{
-            transform: `translateX(${coverShiftX}px) scale(${zoom})`,
-            // Only animate when the user actually flips — never on first paint
+            left: coverShiftX,
+            // Avoid transform here — it breaks StPageFlip hit-testing
             transition: layoutAnim ? undefined : "none",
           }}
         >
           <div className="pdf-book-shell__shadow" aria-hidden />
-          <div className="pdf-book-shell__block">
+          <div
+            className="pdf-book-shell__block pdf-book-shell__zoom"
+            style={
+              zoom !== 1
+                ? { transform: `scale(${zoom})` }
+                : undefined
+            }
+          >
             <HTMLFlipBook
               key={bookKey}
               ref={bookRef as never}
               width={size.w}
               height={size.h}
               size="fixed"
-              minWidth={180}
-              maxWidth={720}
-              minHeight={260}
+              minWidth={160}
+              maxWidth={portrait ? 480 : 720}
+              minHeight={220}
               maxHeight={900}
               showCover
               mobileScrollSupport
               drawShadow
-              flippingTime={850}
-              usePortrait={false}
+              flippingTime={portrait ? 900 : 850}
+              usePortrait={portrait}
               startPage={0}
-              maxShadowOpacity={0.8}
+              maxShadowOpacity={0.85}
               className="pdf-flipbook__book"
               style={{ background: "transparent" }}
               startZIndex={0}
               autoSize={false}
               clickEventForward
               useMouseEvents
-              swipeDistance={40}
+              swipeDistance={portrait ? 30 : 40}
               showPageCorners
               disableFlipByClick={false}
               onChangeState={onFlipState}

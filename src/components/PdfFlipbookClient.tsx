@@ -2,13 +2,17 @@
 
 import { useEffect, useState, type ComponentType } from "react";
 import BookCoverPreview from "@/components/BookCoverPreview";
-import { measureBookPageSize, prefetchPdfBook } from "@/lib/pdfBookLoader";
+import {
+  measureBookPageSize,
+  prefetchPdfBook,
+  type BookPageSize,
+} from "@/lib/pdfBookLoader";
 
 type PdfFlipbookProps = {
   pdfUrl: string;
   title: string;
   coverUrl?: string;
-  initialSize: { w: number; h: number };
+  initialSize: BookPageSize;
   onInteractive?: () => void;
 };
 
@@ -24,9 +28,7 @@ export default function PdfFlipbookClient({
   const [Flipbook, setFlipbook] = useState<ComponentType<PdfFlipbookProps> | null>(
     null,
   );
-  // Always null on SSR + first hydrate, then set in effect — avoids a
-  // wrong-geometry first paint that then slides into place.
-  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  const [size, setSize] = useState<BookPageSize | null>(null);
   const [interactive, setInteractive] = useState(false);
 
   useEffect(() => {
@@ -38,8 +40,13 @@ export default function PdfFlipbookClient({
     void import("@/components/PdfFlipbook").then((mod) => {
       if (!cancelled) setFlipbook(() => mod.default);
     });
+
+    const onResize = () => setSize(measureBookPageSize());
+    window.addEventListener("resize", onResize);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("resize", onResize);
     };
   }, [pdfUrl]);
 
@@ -56,12 +63,13 @@ export default function PdfFlipbookClient({
                 coverUrl={coverUrl}
                 width={size.w}
                 height={size.h}
+                portrait={size.portrait}
               />
             ) : (
               <div
                 className="pdf-flipbook-status__skeleton"
                 aria-hidden
-                style={{ width: "min(40vw, 360px)" }}
+                style={{ width: "min(72vw, 320px)" }}
               />
             )}
           </div>

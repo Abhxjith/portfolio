@@ -4150,20 +4150,24 @@ body:has(.gallery-intro--inside) .bottom-capsule {
 /* Physical book shell — thickness, spine edge, floor shadow */
 .pdf-book-shell {
   position: relative;
-  transform-origin: center center;
-  will-change: transform;
-  /* No default transition — size updates must not look like a slide */
+  /* Prefer `left` for cover centering — CSS `transform` on this node
+     breaks StPageFlip mouse/touch hit-testing so the cover won't open. */
+  will-change: left;
   transition: none;
 }
 
 /* Only animate when the cover actually opens / closes */
 .pdf-book-shell--layout-anim.pdf-book-shell--open {
-  transition: transform 0.12s ease-out;
+  transition: left 0.12s ease-out;
 }
 
 .pdf-book-shell--layout-anim.pdf-book-shell--cover,
 .pdf-book-shell--layout-anim.pdf-book-shell--back {
-  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pdf-book-shell__zoom {
+  transform-origin: center center;
 }
 
 .pdf-book-shell__shadow {
@@ -4200,6 +4204,17 @@ body:has(.gallery-intro--inside) .bottom-capsule {
   position: relative;
   z-index: 1;
   filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.58));
+}
+
+.pdf-flipbook--portrait .pdf-book-shell__block {
+  filter: drop-shadow(0 22px 40px rgba(0, 0, 0, 0.55));
+}
+
+.pdf-flipbook--portrait .pdf-book-shell__shadow {
+  left: 12%;
+  right: 12%;
+  bottom: -24px;
+  opacity: 0.9;
 }
 
 .pdf-flipbook__book {
@@ -4464,7 +4479,7 @@ body:has(.gallery-intro--inside) .bottom-capsule {
 
 @media (max-width: 720px) {
   .pdf-flipbook__stage {
-    padding: 3.25rem 0.35rem 5.5rem;
+    padding: 2.5rem 0.75rem 5.75rem;
   }
 
   .pdf-flipbook__bar {
@@ -4485,7 +4500,7 @@ body:has(.gallery-intro--inside) .bottom-capsule {
   }
 
   .pdf-flipbook-status__skeleton {
-    width: min(58vw, 200px);
+    width: min(72vw, 280px);
   }
 }
 

@@ -65,8 +65,18 @@ export function renderScaleForViewport(pageWidthCss: number): number {
   return Math.max(0.75, Math.min(1.25, (pageWidthCss * dpr) / 595));
 }
 
-/** Single page size for the flipbook (cover is one page; spread is 2× this wide). */
-export function measureBookPageSize(stageWidth?: number) {
+/** Match CSS mobile breakpoint — single-page flipbook below this width */
+export const BOOK_MOBILE_MAX = 720;
+
+export type BookPageSize = {
+  w: number;
+  h: number;
+  /** True on phone: one page at a time, larger on screen */
+  portrait: boolean;
+};
+
+/** Single page size for the flipbook (cover is one page; desktop spread is 2× this wide). */
+export function measureBookPageSize(stageWidth?: number): BookPageSize {
   const vw =
     stageWidth && stageWidth > 0
       ? stageWidth
@@ -74,6 +84,21 @@ export function measureBookPageSize(stageWidth?: number) {
         ? window.innerWidth
         : 1200;
   const vh = (typeof window !== "undefined" ? window.innerHeight : 800) - 72;
+  const portrait = vw < BOOK_MOBILE_MAX;
+
+  if (portrait) {
+    // One page — fill the phone so the turn still reads as a book
+    let pageW = Math.min(vw * 0.94, 460);
+    let pageH = pageW * (297 / 210);
+    const maxH = Math.min(vh * 0.82, 780);
+    if (pageH > maxH) {
+      pageH = maxH;
+      pageW = pageH * (210 / 297);
+    }
+    return { w: Math.round(pageW), h: Math.round(pageH), portrait: true };
+  }
+
+  // Desktop: two-page spread (unchanged)
   const maxSpreadW = Math.min(vw * 0.8, 1080);
   const maxH = Math.min(vh * 0.8, 760);
   let pageW = maxSpreadW / 2;
@@ -82,7 +107,7 @@ export function measureBookPageSize(stageWidth?: number) {
     pageH = maxH;
     pageW = pageH * (210 / 297);
   }
-  return { w: Math.round(pageW), h: Math.round(pageH) };
+  return { w: Math.round(pageW), h: Math.round(pageH), portrait: false };
 }
 
 export async function renderPdfPage(
