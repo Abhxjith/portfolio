@@ -42,10 +42,8 @@ const ZOOM_MIN = 0.7;
 const ZOOM_MAX = 1.45;
 const ZOOM_STEP = 0.15;
 
-function canOpenBook(pages: string[] | undefined) {
-  if (!pages?.[0]) return false;
-  if (pages.length < 2) return true;
-  return Boolean(pages[1]);
+function hasCover(pages: string[] | undefined) {
+  return Boolean(pages?.[0]);
 }
 
 const Page = forwardRef<
@@ -80,7 +78,7 @@ export default function PdfFlipbook({
   const [pages, setPages] = useState<string[]>(() => getCachedPages(pdfUrl) ?? []);
   const [pageCount, setPageCount] = useState(() => getCachedPages(pdfUrl)?.length ?? 0);
   const [error, setError] = useState<string | null>(null);
-  const [ready, setReady] = useState(() => canOpenBook(getCachedPages(pdfUrl)));
+  const [ready, setReady] = useState(() => hasCover(getCachedPages(pdfUrl)));
   const [pageIndex, setPageIndex] = useState(0);
   const [zoom, setZoom] = useState(1);
   // Locked to the same size as the boot preview — avoids a big→small flash
@@ -130,19 +128,20 @@ export default function PdfFlipbook({
     revealedRef.current = false;
     setRevealed(false);
     const cached = getCachedPages(pdfUrl);
-    if (canOpenBook(cached)) {
-      setPages([...(cached as string[])]);
-      setPageCount(cached!.length);
+
+    // Use full cache immediately; otherwise keep boot cover until PDF metadata arrives
+    if (hasCover(cached) && (cached?.length ?? 0) > 1) {
+      const slots = [...(cached as string[])];
+      if (coverUrl) slots[0] = coverUrl;
+      setPages(slots);
+      setPageCount(slots.length);
       setReady(true);
-    } else if (cached?.[0]) {
-      setPages([...cached]);
-      setPageCount(cached.length);
-      setReady(false);
     } else {
       setReady(false);
-      setPages([]);
+      setPages(coverUrl ? [coverUrl] : []);
       setPageCount(0);
     }
+
     setError(null);
     setPageIndex(0);
     setLayoutAnim(false);
@@ -151,6 +150,7 @@ export default function PdfFlipbook({
 
     (async () => {
       try {
+        // Prefetch usually makes this near-instant (metadata only)
         const doc = await getPdfDocument(pdfUrl);
         if (cancelled) return;
 
@@ -160,40 +160,34 @@ export default function PdfFlipbook({
           return;
         }
 
-        setPageCount(total);
         const cachedPages = getCachedPages(pdfUrl);
         const slots =
           cachedPages?.length === total
             ? [...cachedPages]
             : Array.from({ length: total }, () => "");
 
-        if (!slots[0] && coverUrl) {
+        // Sanity cover = page 1 — skip slow PDF cover raster entirely
+        if (coverUrl) {
           slots[0] = coverUrl;
-          setPages([...slots]);
-          // Don't mark ready yet — wait until page 2 exists so the cover can open onto something
-        } else if (canOpenBook(slots)) {
-          setPages([...slots]);
-          setReady(true);
-        } else {
-          setPages([...slots]);
         }
 
-        const scale = renderScaleForViewport(sizeWRef.current || 480);
+        setPageCount(total);
+        setPages([...slots]);
+        if (slots[0]) setReady(true);
 
-        // Cover first, then the page under it so opening isn't onto a blank slot
+        const scale = renderScaleForViewport(sizeWRef.current || 480);
+        const startN = coverUrl ? 2 : 1;
         const order = [
-          1,
-          2,
-          3,
-          4,
-          ...Array.from({ length: total }, (_, i) => i + 1).filter((n) => n > 4),
-        ].filter((n) => n <= total);
+          ...Array.from({ length: Math.min(4, total) }, (_, i) => startN + i),
+          ...Array.from({ length: total }, (_, i) => i + 1),
+        ].filter((n) => n >= 1 && n <= total);
         const seen = new Set<number>();
 
         for (const n of order) {
           if (cancelled || seen.has(n)) continue;
           seen.add(n);
           const idx = n - 1;
+          if (coverUrl && idx === 0) continue;
           const existing = slots[idx];
           if (existing && existing.startsWith("data:")) continue;
 
@@ -202,8 +196,8 @@ export default function PdfFlipbook({
           if (cancelled || !url) return;
           slots[idx] = url;
           setCachedPage(pdfUrl, idx, url, total);
+          if (coverUrl) slots[0] = coverUrl;
           setPages([...slots]);
-          if (canOpenBook(slots)) setReady(true);
         }
       } catch {
         if (!cancelled) setError("load");

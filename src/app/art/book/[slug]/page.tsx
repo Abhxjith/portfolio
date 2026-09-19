@@ -38,6 +38,7 @@ export default async function ArtBookPage({
   return (
     <>
       {coverUrl ? <link rel="preload" as="image" href={coverUrl} /> : null}
+      <link rel="prefetch" href={book.pdfUrl} as="fetch" crossOrigin="anonymous" />
       <div className="pdf-book-page pdf-book-page--immersive">
         <MusicDetailBackButton className="pdf-book-back" />
         <PdfFlipbookClient

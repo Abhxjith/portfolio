@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState } from "react";
+import PdfFlipbook from "@/components/PdfFlipbook";
 import BookCoverPreview from "@/components/BookCoverPreview";
 import {
   measureBookPageSize,
   prefetchPdfBook,
   type BookPageSize,
 } from "@/lib/pdfBookLoader";
-
-type PdfFlipbookProps = {
-  pdfUrl: string;
-  title: string;
-  coverUrl?: string;
-  initialSize: BookPageSize;
-  onInteractive?: () => void;
-};
 
 export default function PdfFlipbookClient({
   pdfUrl,
@@ -25,9 +18,6 @@ export default function PdfFlipbookClient({
   title: string;
   coverUrl?: string;
 }) {
-  const [Flipbook, setFlipbook] = useState<ComponentType<PdfFlipbookProps> | null>(
-    null,
-  );
   const [size, setSize] = useState<BookPageSize | null>(null);
   const [interactive, setInteractive] = useState(false);
 
@@ -35,20 +25,16 @@ export default function PdfFlipbookClient({
     window.scrollTo(0, 0);
     setSize(measureBookPageSize());
     setInteractive(false);
+    // Start PDF bytes immediately — don't wait for layout
     prefetchPdfBook(pdfUrl);
-    let cancelled = false;
-    void import("@/components/PdfFlipbook").then((mod) => {
-      if (!cancelled) setFlipbook(() => mod.default);
-    });
 
     const onResize = () => setSize(measureBookPageSize());
     window.addEventListener("resize", onResize);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener("resize", onResize);
-    };
+    return () => window.removeEventListener("resize", onResize);
   }, [pdfUrl]);
+
+  // With a Sanity cover, flipbook can mount as soon as size is known
+  const showLive = Boolean(size);
 
   return (
     <div className="pdf-flipbook-boot">
@@ -76,11 +62,11 @@ export default function PdfFlipbookClient({
         </div>
       </div>
 
-      {Flipbook && size && (
+      {size && showLive && (
         <div
           className={`pdf-flipbook-boot__live${interactive ? " pdf-flipbook-boot__live--on" : ""}`}
         >
-          <Flipbook
+          <PdfFlipbook
             pdfUrl={pdfUrl}
             title={title}
             coverUrl={coverUrl}

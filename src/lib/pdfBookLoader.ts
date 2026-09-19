@@ -19,6 +19,12 @@ export async function loadPdfjs(): Promise<PdfjsModule> {
   return pdfjsPromise;
 }
 
+/** Call from /art so pdf.js is already warm before opening a book */
+export function warmPdfRuntime() {
+  if (typeof window === "undefined") return;
+  void loadPdfjs();
+}
+
 export function getCachedPages(pdfUrl: string): string[] | undefined {
   const pages = pageCaches.get(pdfUrl);
   return pages?.every(Boolean) ? pages : pages;
@@ -40,8 +46,8 @@ export async function getPdfDocument(pdfUrl: string) {
       pdfjs.getDocument({
         url: pdfUrl,
         withCredentials: false,
-        // Range requests → first page paints sooner
-        disableAutoFetch: true,
+        // Stream + auto-fetch: CDN can deliver bytes while we render page 2+
+        disableAutoFetch: false,
         disableStream: false,
       }).promise,
     );
@@ -53,16 +59,16 @@ export async function getPdfDocument(pdfUrl: string) {
   return pending;
 }
 
-/** Warm pdf.js + start downloading the PDF (call on book-card hover). */
+/** Warm pdf.js + start downloading the PDF (call on book-card hover / section mount). */
 export function prefetchPdfBook(pdfUrl: string) {
   if (!pdfUrl || typeof window === "undefined") return;
   void getPdfDocument(pdfUrl);
 }
 
 export function renderScaleForViewport(pageWidthCss: number): number {
-  const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 1.5) : 1;
-  // Target ~1x CSS width at capped DPR — much faster than fixed 1.55
-  return Math.max(0.75, Math.min(1.25, (pageWidthCss * dpr) / 595));
+  const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 1.25) : 1;
+  // Keep raster light — listing/detail already look sharp enough at this scale
+  return Math.max(0.65, Math.min(1.05, (pageWidthCss * dpr) / 595));
 }
 
 /** Match CSS mobile breakpoint — single-page flipbook below this width */
@@ -87,7 +93,6 @@ export function measureBookPageSize(stageWidth?: number): BookPageSize {
   const portrait = vw < BOOK_MOBILE_MAX;
 
   if (portrait) {
-    // One page — fill the phone so the turn still reads as a book
     let pageW = Math.min(vw * 0.94, 460);
     let pageH = pageW * (297 / 210);
     const maxH = Math.min(vh * 0.82, 780);
@@ -98,7 +103,6 @@ export function measureBookPageSize(stageWidth?: number): BookPageSize {
     return { w: Math.round(pageW), h: Math.round(pageH), portrait: true };
   }
 
-  // Desktop: two-page spread (unchanged)
   const maxSpreadW = Math.min(vw * 0.8, 1080);
   const maxH = Math.min(vh * 0.8, 760);
   let pageW = maxSpreadW / 2;
@@ -124,5 +128,5 @@ export async function renderPdfPage(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-  return canvas.toDataURL("image/jpeg", 0.82);
+  return canvas.toDataURL("image/jpeg", 0.72);
 }
